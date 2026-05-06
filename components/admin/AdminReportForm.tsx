@@ -13,6 +13,10 @@ import {
   ACCEPTED_UPLOAD_IMAGE_TYPES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
+import {
+  ACCEPTED_MENU_TYPES,
+  MAX_MENU_FILE_LABEL,
+} from "@/lib/menu-upload";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -139,8 +143,33 @@ export function AdminReportForm({
         <Input label="Search tags" name="cuisine_tags" defaultValue={report?.cuisine_tags || ""} placeholder="veg, spicy, late night" />
       </div>
 
+      <div>
+        <label className="block text-sm font-semibold text-white">
+          Menu file{" "}
+          <span className="font-normal text-civic-muted">
+            (JPG, PNG, WebP or PDF · max {MAX_MENU_FILE_LABEL})
+          </span>
+        </label>
+        {report?.menu_image_url ? (
+          <p className="mt-1 text-xs text-civic-muted">
+            Current:{" "}
+            <a href={report.menu_image_url} target="_blank" rel="noopener noreferrer" className="underline text-civic-teal">
+              View menu file
+            </a>
+          </p>
+        ) : null}
+        <Input
+          label=""
+          name="menu_file"
+          type="file"
+          accept={ACCEPTED_MENU_TYPES}
+          helperText="Upload a new menu photo or PDF to replace the current one."
+          className="mt-1"
+        />
+      </div>
+
       <Textarea
-        label="Menu / description"
+        label="Menu text / description"
         name="description"
         defaultValue={report?.description || ""}
         helperText="Menu items, highlights, pricing notes, payment notes, and what customers should know."

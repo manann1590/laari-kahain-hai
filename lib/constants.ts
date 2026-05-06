@@ -91,7 +91,7 @@ export const FOOD_CATEGORIES: Record<
     badge: "bg-stone-100 text-stone-950 border-stone-300",
   },
   other: {
-    label: "Other Food Lari",
+    label: "Other Food Spot",
     description: "Anything tasty that does not fit the usual buckets",
     marker: "#64748B",
     badge: "bg-slate-100 text-slate-950 border-slate-200",

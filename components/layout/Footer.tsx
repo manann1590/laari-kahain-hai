@@ -1,6 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
-import { MapPinned, Camera, ShieldCheck } from "lucide-react";
+import { MapPinned, Camera, ShieldCheck, Radar } from "lucide-react";
 import { getCopy, type Locale } from "@/lib/i18n";
 
 export function Footer({ locale }: { locale: Locale }) {
@@ -22,18 +21,15 @@ export function Footer({ locale }: { locale: Locale }) {
           {/* Brand */}
           <div className="max-w-sm">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-card">
-                <Image
-                  src="/logo-lkh.png"
-                  alt="Laari Kahain Hai"
-                  width={40}
-                  height={40}
-                  className="h-full w-full object-contain"
-                />
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-card" style={{ background: "linear-gradient(135deg, #FF4500, #FF8C00)" }}>
+                <Radar className="h-5 w-5 text-white" aria-hidden="true" />
               </span>
               <div className="leading-none">
-                <p className="text-sm font-black text-white">Laari Kahain Hai?</p>
-                <p className="mt-0.5 text-xs text-white/55">Ahmedabad street food, live</p>
+                <p className="text-sm font-black">
+                  <span className="text-civic-orange">Food</span>
+                  <span className="text-white">Radar</span>
+                </p>
+                <p className="mt-0.5 text-xs text-white/55">Find Food. Live Now.</p>
               </div>
             </div>
             <p className="mt-4 text-sm leading-6 text-white/65">
@@ -66,7 +62,7 @@ export function Footer({ locale }: { locale: Locale }) {
         </div>
 
         <div className="mt-8 border-t border-white/10 pt-5 text-xs text-white/30">
-          Laari Kahain Hai &mdash; Ahmedabad street food directory. All listings verified before publishing.
+          FoodRadar &mdash; Ahmedabad street food directory. All listings verified before publishing.
         </div>
       </div>
     </footer>

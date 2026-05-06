@@ -17,7 +17,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
     return (
       <EmptyState
         title="No pending vendors"
-        description="No vendors match the current filters. New food laris can be added manually from the admin panel."
+        description="No vendors match the current filters. New food spots can be added manually from the admin panel."
         action={<Button href="/admin/reports/new">Add vendor</Button>}
       />
     );

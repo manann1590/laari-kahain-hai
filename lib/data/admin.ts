@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { serverConfig } from "@/lib/server-config";
 
-export const ADMIN_COOKIE_NAME = "lari-local_admin";
-const ADMIN_REDIRECT_BASE = "https://lari-local.local";
+export const ADMIN_COOKIE_NAME = "foodradar_admin";
+const ADMIN_REDIRECT_BASE = "https://foodradar.local";
 
 async function sha256(value: string) {
   const bytes = new TextEncoder().encode(value);

@@ -12,11 +12,17 @@ import {
   MAX_UPLOAD_IMAGE_BYTES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
+import {
+  ACCEPTED_MENU_LABEL,
+  detectMenuFile,
+  MAX_MENU_FILE_BYTES,
+  MAX_MENU_FILE_LABEL,
+} from "@/lib/menu-upload";
 import type { FoodCategory, ReportInsert } from "@/lib/supabase/types";
 import { reportCreateSchema } from "@/lib/validators/report";
 
 const SUBMISSION_COOLDOWN_SECONDS = 30;
-const PUBLIC_SUBMISSION_COOKIE = "lari_local_last_vendor_submission";
+const PUBLIC_SUBMISSION_COOKIE = "foodradar_last_vendor_submission";
 
 async function uploadPublicImage(formData: FormData): Promise<{
   image_path?: string;
@@ -40,18 +46,50 @@ async function uploadPublicImage(formData: FormData): Promise<{
 
   const path = `public-submissions/${crypto.randomUUID()}.${imageFormat.extension}`;
   const supabase = createAdminSupabaseClient();
-  const { error } = await supabase.storage.from("report-images").upload(path, file, {
+  const { error } = await supabase.storage.from("vendor-images").upload(path, file, {
     contentType: imageFormat.mimeType,
     upsert: false,
   });
 
   if (error) throw new Error(`Image upload failed: ${error.message}`);
 
-  const { data } = supabase.storage.from("report-images").getPublicUrl(path);
+  const { data } = supabase.storage.from("vendor-images").getPublicUrl(path);
   return {
     image_path: path,
     image_url: data.publicUrl,
     hasImage: true,
+  };
+}
+
+async function uploadPublicMenuFile(formData: FormData): Promise<{
+  menu_image_path?: string;
+  menu_image_url?: string;
+}> {
+  const file = formData.get("menu_file");
+  if (!(file instanceof File) || file.size === 0) return {};
+
+  if (file.size > MAX_MENU_FILE_BYTES) {
+    throw new Error(`Menu file must be ${MAX_MENU_FILE_LABEL} or smaller.`);
+  }
+
+  const format = await detectMenuFile(file);
+  if (!format) {
+    throw new Error(`Only ${ACCEPTED_MENU_LABEL} are accepted for the menu.`);
+  }
+
+  const path = `menus/public/${crypto.randomUUID()}.${format.extension}`;
+  const supabase = createAdminSupabaseClient();
+  const { error } = await supabase.storage.from("vendor-images").upload(path, file, {
+    contentType: format.mimeType,
+    upsert: false,
+  });
+
+  if (error) throw new Error(`Menu upload failed: ${error.message}`);
+
+  const { data } = supabase.storage.from("vendor-images").getPublicUrl(path);
+  return {
+    menu_image_path: path,
+    menu_image_url: data.publicUrl,
   };
 }
 
@@ -90,15 +128,18 @@ export async function submitPublicReportAction(formData: FormData) {
 
   const { hasImage, ...uploaded } = await uploadPublicImage(formData);
   if (!hasImage) {
-    throw new Error("Please add a fresh camera photo of your lari, menu, or food.");
+    throw new Error("Please add a fresh camera photo of your food spot, menu, or stall.");
   }
+
+  const menuUploaded = await uploadPublicMenuFile(formData);
 
   const report = await createPublicReport({
     ...input,
     ...uploaded,
+    ...menuUploaded,
     stall_photo_url: uploaded.image_url,
     stall_photo_path: uploaded.image_path,
-    verification_level: hasImage ? "medium" : "low",
+    verification_level: "medium",
   } as ReportInsert);
 
   cookieStore.set(PUBLIC_SUBMISSION_COOKIE, String(now), {

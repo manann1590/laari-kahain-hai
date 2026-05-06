@@ -188,7 +188,7 @@ export default async function MapPage({
                                 </div>
                               ) : null}
                               <div>
-                                <p className="font-black text-white">{report.title || "Unnamed lari"}</p>
+                                <p className="font-black text-white">{report.title || "Unnamed spot"}</p>
                                 <p className="text-xs text-civic-muted">{report.price_range || "Price not added"}</p>
                               </div>
                             </div>

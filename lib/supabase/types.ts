@@ -41,6 +41,8 @@ export type Report = {
   vendor_phone: string | null;
   vendor_whatsapp: string | null;
   menu_text: string | null;
+  menu_image_url: string | null;
+  menu_image_path: string | null;
   cuisine_tags: string | null;
   price_range: string | null;
   hours_text: string | null;
@@ -80,6 +82,8 @@ export type PublicReport = Pick<
   | "vendor_phone"
   | "vendor_whatsapp"
   | "menu_text"
+  | "menu_image_url"
+  | "menu_image_path"
   | "cuisine_tags"
   | "price_range"
   | "hours_text"

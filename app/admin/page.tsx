@@ -52,7 +52,7 @@ export default async function AdminDashboardPage({
     <PageShell
       eyebrow="Admin"
       title="Admin dashboard"
-      description="Review incoming vendor listings before they become public. Approve only clear, location-backed food trucks and laris."
+      description="Review incoming vendor listings before they become public. Approve only clear, location-backed food spots."
       actions={
         <>
           <Button href="/admin/reports/new">

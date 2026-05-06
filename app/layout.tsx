@@ -6,15 +6,15 @@ import { getRequestLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: {
-    default: "Laari Kahain Hai — Ahmedabad Street Food Map",
-    template: "%s | Laari Kahain Hai",
+    default: "FoodRadar — Ahmedabad Street Food Map",
+    template: "%s | FoodRadar",
   },
   description:
-    "Find food trucks, laris, carts, and pop-ups in Ahmedabad — live locations, menus, photos, and direct contact. Where's the laari?",
+    "Find food trucks, carts, and street food spots in Ahmedabad — live locations, menus, photos, and direct contact. Find Food. Live Now.",
   openGraph: {
-    title: "Laari Kahain Hai — Ahmedabad Street Food Map",
+    title: "FoodRadar — Ahmedabad Street Food Map",
     description:
-      "Find food trucks, laris, carts, and pop-ups in Ahmedabad — live locations, menus, photos, and direct contact.",
+      "Find food trucks, carts, and street food spots in Ahmedabad — live locations, menus, photos, and direct contact.",
     type: "website",
   },
 };

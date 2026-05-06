@@ -50,7 +50,7 @@ export async function generateMetadata({
   if (!report) return { title: "Vendor not found" };
   return {
     title: `${report.title || FOOD_CATEGORIES[report.category].label} in ${report.area || report.city || "Ahmedabad"}`,
-    description: report.menu_text || report.description || "Verified food vendor listing on Lari Local.",
+    description: report.menu_text || report.description || "Verified food vendor listing on FoodRadar.",
   };
 }
 
@@ -75,7 +75,7 @@ export default async function ReportDetailPage({
   if (!report) notFound();
 
   const shareUrl = `${appConfig.siteUrl}/reports/${report.id}`;
-  const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(`Food vendor on Lari Local: ${shareUrl}`)}`;
+  const whatsAppUrl = `https://wa.me/?text=${encodeURIComponent(`Find this on FoodRadar: ${shareUrl}`)}`;
   const vendorTel = report.vendor_phone ? `tel:${report.vendor_phone.replace(/[^\d+]/g, "")}` : "";
   const vendorWhatsappDigits = (report.vendor_whatsapp || report.vendor_phone || "").replace(/\D/g, "");
   const vendorWhatsappUrl = vendorWhatsappDigits ? `https://wa.me/${vendorWhatsappDigits}` : "";
@@ -153,11 +153,35 @@ export default async function ReportDetailPage({
           </Card>
 
           <Card title="Menu" className="menu-paper">
+            {report.menu_image_url ? (
+              report.menu_image_url.endsWith(".pdf") ? (
+                <a
+                  href={report.menu_image_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-civic-line bg-civic-ink px-4 py-3 text-sm font-semibold text-white hover:bg-white/5"
+                >
+                  <ExternalLink className="h-4 w-4 shrink-0 text-civic-teal" aria-hidden="true" />
+                  Open menu PDF
+                </a>
+              ) : (
+                <div className="overflow-hidden rounded-lg border border-civic-line">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={report.menu_image_url}
+                    alt="Menu"
+                    className="w-full object-contain"
+                  />
+                </div>
+              )
+            ) : null}
             {report.menu_text || report.description ? (
-              <p className="whitespace-pre-line leading-8 text-white">{report.menu_text || report.description}</p>
-            ) : (
+              <p className={`whitespace-pre-line leading-8 text-white ${report.menu_image_url ? "mt-4" : ""}`}>
+                {report.menu_text || report.description}
+              </p>
+            ) : !report.menu_image_url ? (
               <p className="text-civic-muted">{t.reportDetail.noDescription}</p>
-            )}
+            ) : null}
             {report.address_text ? (
               <p className="mt-4 rounded-lg border border-civic-line bg-civic-ink p-4 text-sm leading-6 text-civic-muted">
                 {report.address_text}

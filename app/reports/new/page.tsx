@@ -9,8 +9,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
-  title: "List Your Lari",
-  description: "Submit a food truck or lari listing with menu, phone, photo, and location for admin review.",
+  title: "List Your Spot",
+  description: "Submit a food spot listing with menu, phone, photo, and location for admin review.",
 };
 
 export default async function NewPublicReportPage({

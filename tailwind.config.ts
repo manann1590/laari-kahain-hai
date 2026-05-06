@@ -20,33 +20,34 @@ const config: Config = {
           text:   "#2D2A26",   // primary — charcoal brown
           muted:  "#6B5E55",   // secondary — warm muted brown
 
-          // ── Brand palette (from logo) ─────────────────────────────
-          orange: "#F97316",   // Indian Laari Orange — primary CTA
-          yellow: "#F7B500",   // Street Food Yellow  — highlights
-          red:    "#D62828",   // Cart Accent Red      — urgency / trending
-          brown:  "#2B1B12",   // Outline / Depth
-          leaf:   "#2E7D32",   // Leaf Green           — trust / freshness
-          hover:  "#FFB703",   // Bright Mango         — hover accent
+          // ── Brand palette (FoodRadar) ────────────────────────────
+          orange: "#FF5722",   // FoodRadar Red-Orange — primary CTA
+          yellow: "#FF8C00",   // Radar Amber          — highlights
+          red:    "#E53935",   // Pin Red              — urgency
+          brown:  "#1A0A00",   // Deep Dark
+          leaf:   "#00C853",   // Radar Green          — live / active
+          hover:  "#FF7043",   // Hover accent
 
           // ── Functional ───────────────────────────────────────────
-          success: "#22C55E",
+          success: "#00C853",
           error:   "#EF4444",
-          warning: "#F59E0B",
-          info:    "#38BDF8",
+          warning: "#FF8C00",
+          info:    "#00C853",
 
-          // ── Legacy aliases (keep compiling) ──────────────────────
-          soft:   "#FDF8F2",   // ← same as bg; used in bg-civic-soft/*
-          amber:  "#F97316",   // ← same as orange; many refs use civic-amber
-          green:  "#22C55E",   // ← success green
-          teal:   "#38BDF8",   // ← info blue
-          blue:   "#818CF8",   // soft indigo
+          // ── Legacy aliases ────────────────────────────────────────
+          soft:   "#FDF8F2",
+          amber:  "#FF5722",
+          green:  "#00C853",
+          teal:   "#00C853",
+          blue:   "#818CF8",
         },
       },
       boxShadow: {
         soft:        "0 8px 32px rgba(43, 27, 18, 0.10)",
         card:        "0 2px 12px rgba(43, 27, 18, 0.08)",
-        glow:        "0 0 28px rgba(249, 115, 22, 0.20)",
-        "glow-gold": "0 0 28px rgba(247, 181, 0, 0.24)",
+        glow:        "0 0 28px rgba(255, 87, 34, 0.25)",
+        "glow-gold": "0 0 28px rgba(255, 140, 0, 0.24)",
+        "glow-green":"0 0 28px rgba(0, 200, 83, 0.25)",
       },
     },
   },

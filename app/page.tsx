@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { Radar } from "lucide-react";
 import {
   ArrowRight,
   Camera,
@@ -81,7 +81,7 @@ const steps = [
     num: "02",
     icon: MapPin,
     title: "Pin",
-    body: "Capture GPS while standing at your lari, or paste a Google Maps link.",
+    body: "Capture GPS while standing at your spot, or paste a Google Maps link.",
   },
   {
     num: "03",
@@ -113,7 +113,7 @@ export default async function HomePage() {
         {/* Hero gradient background */}
         <div
           className="absolute inset-0"
-          style={{ background: "linear-gradient(135deg, #F97316 0%, #F7B500 55%, #FFD166 100%)" }}
+          style={{ background: "linear-gradient(135deg, #FF4500 0%, #FF5722 45%, #FF8C00 100%)" }}
           aria-hidden="true"
         />
 
@@ -124,15 +124,8 @@ export default async function HomePage() {
             <div>
               {/* Logo + brand name */}
               <div className="flex items-center gap-3">
-                <span className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white shadow-soft">
-                  <Image
-                    src="/logo-lkh.png"
-                    alt="Laari Kahain Hai"
-                    width={56}
-                    height={56}
-                    className="h-full w-full object-contain"
-                    priority
-                  />
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 shadow-soft">
+                  <Radar className="h-8 w-8 text-white" aria-hidden="true" />
                 </span>
                 <span className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/20 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-white backdrop-blur-sm">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
@@ -140,25 +133,23 @@ export default async function HomePage() {
                 </span>
               </div>
 
-              <h1 className="mt-5 text-6xl font-black leading-[0.88] tracking-tight text-white drop-shadow-sm sm:text-7xl lg:text-8xl">
-                Laari<br />
-                Kahain<br />
-                <span className="text-civic-brown">Hai?</span>
+              <h1 className="mt-5 text-7xl font-black leading-[0.88] tracking-tight text-white drop-shadow-sm sm:text-8xl lg:text-9xl">
+                Food<span className="text-white/30">Radar</span>
               </h1>
 
               <p className="mt-5 max-w-lg text-base leading-7 text-white/85 sm:text-lg">
-                Find Ahmedabad&apos;s food trucks, laris, and carts before they roll to the next
-                corner&nbsp;— menu, photo, phone, and live location in one tap.
+                Find Ahmedabad&apos;s street food vendors before they move&nbsp;— menu, photo,
+                phone, and live location in one tap.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button href="/map" size="lg" className="bg-civic-brown text-white shadow-soft hover:bg-[#3d2920] border-transparent focus:ring-civic-brown">
+                <Button href="/map" size="lg" className="bg-white text-civic-orange font-black shadow-soft hover:bg-white/90 border-transparent focus:ring-white">
                   <MapPinned className="h-4 w-4" aria-hidden="true" />
                   Open Food Map
                 </Button>
                 <Button href="/reports/new" variant="ghost" size="lg" className="border border-white/40 bg-white/20 text-white backdrop-blur-sm hover:bg-white/30">
                   <Camera className="h-4 w-4" aria-hidden="true" />
-                  List Your Lari
+                  List Your Spot
                 </Button>
               </div>
 
@@ -309,7 +300,7 @@ export default async function HomePage() {
                 Scan by craving, not by scrolling.
               </h2>
               <p className="mt-2 max-w-lg text-sm leading-6 text-civic-muted">
-                Filter by cuisine, neighbourhood, hours, and price to find the right lari fast.
+                Filter by cuisine, neighbourhood, hours, and price to find the right spot fast.
               </p>
             </div>
           </div>
@@ -384,7 +375,7 @@ export default async function HomePage() {
             {/* Vendor CTA — warm gradient */}
             <div
               className="overflow-hidden rounded-2xl p-7 text-white shadow-soft"
-              style={{ background: "linear-gradient(135deg, #F97316 0%, #F7B500 100%)" }}
+              style={{ background: "linear-gradient(135deg, #FF4500 0%, #FF8C00 100%)" }}
             >
               <p className="inline-flex items-center rounded-full border border-white/30 bg-white/20 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-widest text-white">
                 For Vendors

@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS public.vendors (
   image_path               TEXT,
   stall_photo_url          TEXT,
   stall_photo_path         TEXT,
+  menu_image_url           TEXT,
+  menu_image_path          TEXT,
 
   -- Moderation
   status                   TEXT         NOT NULL DEFAULT 'pending' CHECK (status IN (
@@ -217,10 +219,17 @@ CREATE POLICY "Public read vendor images"
 -- so no anon upload policy is needed here.
 
 
+-- ── 8. Migrations — run these on an EXISTING database ────────────────────────
+-- (already included in CREATE TABLE above for fresh setups)
+
+ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS menu_image_url  TEXT;
+ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS menu_image_path TEXT;
+
+
 -- ══════════════════════════════════════════════════════════════════════════════
--- Done. Tables are empty and ready for real vendor submissions.
+-- Done. Tables are ready for vendor submissions.
 -- Verify with:
---   SELECT COUNT(*) FROM public.vendors;   -- should be 0
+--   SELECT COUNT(*) FROM public.vendors;   -- should be 0 on fresh setup
 -- ══════════════════════════════════════════════════════════════════════════════
 
 

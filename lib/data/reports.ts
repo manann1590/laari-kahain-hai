@@ -36,6 +36,8 @@ const PUBLIC_REPORT_COLUMNS = [
   "vendor_phone",
   "vendor_whatsapp",
   "menu_text",
+  "menu_image_url",
+  "menu_image_path",
   "cuisine_tags",
   "price_range",
   "hours_text",

@@ -18,6 +18,12 @@ import {
   MAX_UPLOAD_IMAGE_BYTES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
+import {
+  ACCEPTED_MENU_LABEL,
+  detectMenuFile,
+  MAX_MENU_FILE_BYTES,
+  MAX_MENU_FILE_LABEL,
+} from "@/lib/menu-upload";
 import type { FoodCategory, Severity, ReportInsert, ReportStatus } from "@/lib/supabase/types";
 
 async function uploadImage(formData: FormData, fieldName = "image_file", storagePath = "manual") {
@@ -49,6 +55,35 @@ async function uploadImage(formData: FormData, fieldName = "image_file", storage
   };
 }
 
+async function uploadMenuFile(formData: FormData) {
+  const file = formData.get("menu_file");
+  if (!(file instanceof File) || file.size === 0) return {};
+
+  if (file.size > MAX_MENU_FILE_BYTES) {
+    throw new Error(`Menu file must be ${MAX_MENU_FILE_LABEL} or smaller.`);
+  }
+
+  const format = await detectMenuFile(file);
+  if (!format) {
+    throw new Error(`Only ${ACCEPTED_MENU_LABEL} uploads are supported for the menu.`);
+  }
+
+  const path = `menus/${crypto.randomUUID()}.${format.extension}`;
+  const supabase = createAdminSupabaseClient();
+  const { error } = await supabase.storage.from("vendor-images").upload(path, file, {
+    contentType: format.mimeType,
+    upsert: false,
+  });
+
+  if (error) throw new Error(`Menu upload failed: ${error.message}`);
+
+  const { data } = supabase.storage.from("vendor-images").getPublicUrl(path);
+  return {
+    menu_image_path: path,
+    menu_image_url: data.publicUrl,
+  };
+}
+
 function reportInputFromForm(formData: FormData) {
   return {
     category: safeString(formData.get("category")) as FoodCategory,
@@ -75,10 +110,14 @@ function reportInputFromForm(formData: FormData) {
 
 export async function createReportAction(formData: FormData) {
   await requireAdmin();
-  const uploaded = await uploadImage(formData);
+  const [uploaded, menuUploaded] = await Promise.all([
+    uploadImage(formData),
+    uploadMenuFile(formData),
+  ]);
   const report = await createReport({
     ...reportInputFromForm(formData),
     ...uploaded,
+    ...menuUploaded,
   } as ReportInsert);
   revalidatePath("/admin");
   redirect(`/admin/reports/${report.id}`);
@@ -86,10 +125,14 @@ export async function createReportAction(formData: FormData) {
 
 export async function updateReportAction(id: string, formData: FormData) {
   await requireAdmin();
-  const uploaded = await uploadImage(formData);
+  const [uploaded, menuUploaded] = await Promise.all([
+    uploadImage(formData),
+    uploadMenuFile(formData),
+  ]);
   await updateReport(id, {
     ...reportInputFromForm(formData),
     ...uploaded,
+    ...menuUploaded,
     status: safeString(formData.get("status")) as ReportStatus,
     duplicate_of: safeString(formData.get("duplicate_of")),
   });

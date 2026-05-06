@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, MapPinned, ShieldCheck, Camera } from "lucide-react";
+import { Home, MapPinned, ShieldCheck, Camera, Radar } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getCopy, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -32,20 +31,16 @@ export function Header({ locale }: { locale: Locale }) {
 
           {/* Logo */}
           <Link href="/" className="flex min-w-0 shrink-0 items-center gap-2.5">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-card border border-civic-line">
-              <Image
-                src="/logo-lkh.png"
-                alt="Laari Kahain Hai logo"
-                width={40}
-                height={40}
-                className="h-full w-full object-contain"
-                priority
-              />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-civic-orange/20 shadow-card" style={{ background: "linear-gradient(135deg, #FF4500, #FF8C00)" }}>
+              <Radar className="h-5 w-5 text-white" aria-hidden="true" />
             </span>
             <span className="min-w-0 leading-none">
-              <span className="block truncate text-sm font-black text-civic-text">Laari KH</span>
+              <span className="block truncate text-sm font-black">
+                <span className="text-civic-orange">Food</span>
+                <span className="text-civic-text">Radar</span>
+              </span>
               <span className="hidden text-[10px] font-semibold text-civic-muted sm:block">
-                Kahain Hai?
+                Find Food. Live Now.
               </span>
             </span>
           </Link>

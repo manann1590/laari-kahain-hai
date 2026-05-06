@@ -11,6 +11,7 @@ import {
   CupSoda,
   Dessert,
   ExternalLink,
+  FileText,
   ImageOff,
   Moon,
   MapPin,
@@ -20,6 +21,7 @@ import {
   Soup,
   Store,
   Send,
+  Upload,
   Utensils,
   X,
 } from "lucide-react";
@@ -32,13 +34,17 @@ import {
   ACCEPTED_UPLOAD_IMAGE_TYPES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
+import {
+  ACCEPTED_MENU_TYPES,
+  MAX_MENU_FILE_LABEL,
+} from "@/lib/menu-upload";
 import type { FoodCategory } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { Card } from "@/components/ui/Card";
 
-const DRAFT_KEY = "lari_local_vendor_draft";
+const DRAFT_KEY = "foodradar_vendor_draft";
 
 type DraftData = {
   category?: FoodCategory;
@@ -155,6 +161,8 @@ export function PublicReportForm({
   const [draftRestored, setDraftRestored] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuFileRef = useRef<HTMLInputElement>(null);
+  const [menuFileName, setMenuFileName] = useState("");
 
   const lat = Number(latitude);
   const lng = Number(longitude);
@@ -233,6 +241,18 @@ export function PublicReportForm({
     }
   }
 
+  function onMenuFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    setMenuFileName(file ? file.name : "");
+  }
+
+  function clearMenuFile() {
+    setMenuFileName("");
+    if (menuFileRef.current) {
+      menuFileRef.current.value = "";
+    }
+  }
+
   async function useCurrentLocation() {
     setLocationError("");
     setIsLocating(true);
@@ -299,7 +319,7 @@ export function PublicReportForm({
       <Card title="1. Vendor details" description="Tell people who you are, what to call you, and when to show up." className="p-4 sm:p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <Input
-            label="Food truck / lari name · Required"
+            label="Food spot / stall name · Required"
             name="title"
             required
             placeholder="Raju Bhai Cheese Vada Pav"
@@ -521,23 +541,65 @@ export function PublicReportForm({
         </div>
       </Card>
 
-      <Card title={t.reportForm.describeTitle} description={t.reportForm.describeDescription} className="p-4 sm:p-5">
+      <Card title="5. Menu photo / PDF" description="Upload your menu as an image or PDF so customers know what to expect." className="p-4 sm:p-5">
+        {/* Menu file upload */}
+        <div>
+          <label className="block text-sm font-semibold text-civic-text">
+            Menu file <span className="font-normal text-civic-muted">(JPG, PNG, WebP or PDF · max {MAX_MENU_FILE_LABEL})</span>
+          </label>
+          <input
+            ref={menuFileRef}
+            type="file"
+            name="menu_file"
+            accept={ACCEPTED_MENU_TYPES}
+            onChange={onMenuFileChange}
+            className="hidden"
+          />
+          <div className="mt-2">
+            {menuFileName ? (
+              <div className="flex items-center gap-3 rounded-lg border border-civic-leaf/40 bg-civic-leaf/8 px-3 py-2.5">
+                <FileText className="h-4 w-4 shrink-0 text-civic-leaf" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-sm text-civic-text">{menuFileName}</span>
+                <button
+                  type="button"
+                  onClick={clearMenuFile}
+                  className="shrink-0 text-civic-muted hover:text-civic-text"
+                  aria-label="Remove menu file"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => menuFileRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-civic-line bg-white px-4 py-5 text-sm text-civic-muted transition-colors hover:border-civic-orange/50 hover:text-civic-orange"
+              >
+                <Upload className="h-5 w-5" aria-hidden="true" />
+                Click to upload menu photo or PDF
+              </button>
+            )}
+          </div>
+          <p className="mt-1.5 text-xs text-civic-muted">
+            A photo of your physical menu works great. PDFs and screenshots are fine too.
+          </p>
+        </div>
+
+        {/* Optional extra notes */}
         <Textarea
-          label={t.reportForm.descriptionRequired}
+          label="Extra notes · Optional"
           name="description"
-          required
           placeholder={t.reportForm.descriptionPlaceholder}
-          helperText={t.reportForm.descriptionHelp}
+          helperText="Today's specials, price range, payment methods, or anything customers should know."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="mt-4"
         />
 
         <div className="mt-4 rounded-lg border border-civic-orange/25 bg-civic-orange/8 p-4 text-sm leading-6 text-civic-text">
           <div className="flex gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-            <p>
-              {t.reportForm.safetyCopy}
-            </p>
+            <p>{t.reportForm.safetyCopy}</p>
           </div>
         </div>
 
