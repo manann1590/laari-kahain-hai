@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Crosshair, ExternalLink, Save, ShieldAlert } from "lucide-react";
-import { ISSUE_TYPES, SEVERITY_LABELS, STATUS_LABELS } from "@/lib/constants";
+import { FOOD_CATEGORIES, SEVERITY_LABELS, STATUS_LABELS } from "@/lib/constants";
 import { compressFormImage } from "@/lib/client/image-compression";
 import { getCurrentCoordinates } from "@/lib/client/geolocation";
 import type { Report } from "@/lib/supabase/types";
@@ -102,10 +102,10 @@ export function AdminReportForm({
       <div className="grid gap-4 md:grid-cols-2">
         <Select
           label="Cuisine"
-          name="issue_type"
+          name="category"
           required
-          defaultValue={report?.issue_type || "pothole"}
-          options={Object.entries(ISSUE_TYPES).map(([value, item]) => ({
+          defaultValue={report?.category || "chaat_snacks"}
+          options={Object.entries(FOOD_CATEGORIES).map(([value, item]) => ({
             value,
             label: item.label,
           }))}

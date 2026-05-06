@@ -8,60 +8,36 @@ import {
   ExternalLink,
   MessageCircle,
   Phone,
-  RefreshCw,
-  Send,
   ShieldCheck,
   Workflow,
 } from "lucide-react";
-import { ISSUE_TYPES } from "@/lib/constants";
+import { FOOD_CATEGORIES } from "@/lib/constants";
 import { getRequestLocale } from "@/lib/i18n-server";
-import { getCopy, issueLabel } from "@/lib/i18n";
+import { getCopy, categoryLabel } from "@/lib/i18n";
 import { appConfig } from "@/lib/config";
 import { getPublicReportById } from "@/lib/data/reports";
-import { formatDate, formatDateTime, timeAgo, titleFromLocation } from "@/lib/utils";
+import { formatDateTime, timeAgo, titleFromLocation } from "@/lib/utils";
 import { googleMapsLink } from "@/lib/geo";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { AmcEmailBatch, ReportEvent } from "@/lib/supabase/types";
+import type { ReportEvent } from "@/lib/supabase/types";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { IssueTypeBadge } from "@/components/reports/IssueTypeBadge";
+import { CategoryBadge } from "@/components/reports/CategoryBadge";
 import { ReportStatusBadge } from "@/components/reports/ReportStatusBadge";
 import { PublicMapLoader } from "@/components/map/PublicMapLoader";
-import { ReopenForm } from "@/components/reports/ReopenForm";
-import { citizenConfirmResolvedAction } from "@/app/reports/[id]/actions";
 
 export const revalidate = 300;
 
 async function getPublicReportEvents(reportId: string): Promise<ReportEvent[]> {
   const client = createServerSupabaseClient();
   const { data } = await client
-    .from("report_events")
+    .from("vendor_events")
     .select("*")
-    .eq("report_id", reportId)
+    .eq("vendor_id", reportId)
     .order("created_at", { ascending: true });
   return (data || []) as ReportEvent[];
-}
-
-async function getAmcBatchForReport(reportId: string): Promise<AmcEmailBatch | null> {
-  const client = createServerSupabaseClient();
-  const { data: batchReport } = await client
-    .from("amc_email_batch_reports")
-    .select("batch_id")
-    .eq("report_id", reportId)
-    .maybeSingle();
-
-  if (!batchReport) return null;
-
-  const { data: batch } = await client
-    .from("amc_email_batches")
-    .select("*")
-    .eq("id", batchReport.batch_id)
-    .eq("status", "sent")
-    .maybeSingle();
-
-  return batch as AmcEmailBatch | null;
 }
 
 export async function generateMetadata({
@@ -73,7 +49,7 @@ export async function generateMetadata({
   const report = await getPublicReportById(id).catch(() => null);
   if (!report) return { title: "Vendor not found" };
   return {
-    title: `${report.title || ISSUE_TYPES[report.issue_type].label} in ${report.area || report.city || "Ahmedabad"}`,
+    title: `${report.title || FOOD_CATEGORIES[report.category].label} in ${report.area || report.city || "Ahmedabad"}`,
     description: report.menu_text || report.description || "Verified food vendor listing on Lari Local.",
   };
 }
@@ -91,10 +67,9 @@ export default async function ReportDetailPage({
   const resolvedSearchParams = await searchParams;
   const justSubmitted = resolvedSearchParams.submitted === "1";
 
-  const [report, events, amcBatch] = await Promise.all([
+  const [report, events] = await Promise.all([
     getPublicReportById(id).catch(() => null),
     getPublicReportEvents(id).catch(() => [] as ReportEvent[]),
-    getAmcBatchForReport(id).catch(() => null),
   ]);
 
   if (!report) notFound();
@@ -105,14 +80,10 @@ export default async function ReportDetailPage({
   const vendorWhatsappDigits = (report.vendor_whatsapp || report.vendor_phone || "").replace(/\D/g, "");
   const vendorWhatsappUrl = vendorWhatsappDigits ? `https://wa.me/${vendorWhatsappDigits}` : "";
 
-  const canReopen =
-    report.status === "resolved_claimed" || report.status === "citizen_verified_resolved";
-  const canConfirmResolved = report.status === "resolved_claimed";
-
   return (
     <PageShell
       eyebrow={t.reportDetail.eyebrow}
-      title={report.title || issueLabel(locale, report.issue_type)}
+      title={report.title || categoryLabel(locale, report.category)}
       description={t.reportDetail.description}
       actions={
         <>
@@ -143,7 +114,6 @@ export default async function ReportDetailPage({
         </Card>
       ) : null}
 
-      {/* Tracking ID box */}
       {report.tracking_id ? (
         <div className="mb-6 flex items-center gap-3 rounded-lg border border-civic-line bg-civic-soft px-4 py-3">
           <ClipboardCopy className="h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
@@ -158,7 +128,7 @@ export default async function ReportDetailPage({
         <div className="space-y-6">
           <Card variant="elevated">
             <div className="flex flex-wrap gap-2">
-              <IssueTypeBadge issueType={report.issue_type} locale={locale} />
+              <CategoryBadge category={report.category} locale={locale} />
               <ReportStatusBadge status={report.status} locale={locale} />
               {report.price_range ? <Badge className="border-amber-200 bg-amber-100 text-amber-950">{report.price_range}</Badge> : null}
             </div>
@@ -177,14 +147,14 @@ export default async function ReportDetailPage({
               </div>
               <div className="rounded-lg border border-civic-line bg-civic-ink p-4">
                 <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Tags</p>
-                <p className="mt-2 font-black text-white">{report.cuisine_tags || issueLabel(locale, report.issue_type)}</p>
+                <p className="mt-2 font-black text-white">{report.cuisine_tags || categoryLabel(locale, report.category)}</p>
               </div>
             </div>
           </Card>
 
           <Card title="Menu" className="menu-paper">
             {report.menu_text || report.description ? (
-            <p className="whitespace-pre-line leading-8 text-white">{report.menu_text || report.description}</p>
+              <p className="whitespace-pre-line leading-8 text-white">{report.menu_text || report.description}</p>
             ) : (
               <p className="text-civic-muted">{t.reportDetail.noDescription}</p>
             )}
@@ -216,7 +186,6 @@ export default async function ReportDetailPage({
             </div>
           </Card>
 
-          {/* Full public timeline */}
           <Card title={t.common.timeline}>
             <ol className="space-y-4 text-sm">
               <li className="flex gap-3">
@@ -259,83 +228,8 @@ export default async function ReportDetailPage({
                   </div>
                 </li>
               ) : null}
-              {report.resolved_claimed_at ? (
-                <li className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-white">{t.reportDetail.resolvedClaimed}</p>
-                    <p className="text-civic-muted">{formatDateTime(report.resolved_claimed_at)}</p>
-                  </div>
-                </li>
-              ) : null}
-              {report.citizen_verified_at ? (
-                <li className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-white">{t.reportDetail.citizenVerifiedResolved}</p>
-                    <p className="text-civic-muted">{formatDateTime(report.citizen_verified_at)}</p>
-                  </div>
-                </li>
-              ) : null}
-              {report.reopened_at ? (
-                <li className="flex gap-3">
-                  <RefreshCw className="mt-0.5 h-5 w-5 shrink-0 text-orange-600" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-white">{t.reportDetail.reopened}</p>
-                    <p className="text-civic-muted">{formatDateTime(report.reopened_at)}</p>
-                  </div>
-                </li>
-              ) : null}
-              {report.resolved_at ? (
-                <li className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-white">{t.common.resolved}</p>
-                    <p className="text-civic-muted">{formatDateTime(report.resolved_at)}</p>
-                  </div>
-                </li>
-              ) : null}
             </ol>
           </Card>
-
-          {/* Export batch status */}
-          <Card title={t.reportDetail.amcStatus}>
-            {amcBatch ? (
-              <div className="flex items-start gap-3 text-sm leading-6">
-                <Send className="mt-0.5 h-5 w-5 shrink-0 text-indigo-600" aria-hidden="true" />
-                <p className="text-white">
-                  {t.reportDetail.includedAmc} — {t.reportDetail.sentOn}{" "}
-                  <span className="font-semibold">{formatDate(amcBatch.sent_at)}</span>.
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-civic-muted">{t.reportDetail.notIncludedAmc}</p>
-            )}
-          </Card>
-
-          {/* Citizen confirm resolved */}
-          {canConfirmResolved ? (
-            <Card title={t.reportDetail.confirmResolved} variant="success">
-              <p className="mb-4 text-sm leading-6 text-civic-muted">
-                {t.reportDetail.confirmResolvedCopy}
-              </p>
-              <form action={citizenConfirmResolvedAction}>
-                <input type="hidden" name="id" value={report.id} />
-                <button
-                  type="submit"
-                  className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-civic-green px-4 text-sm font-black uppercase tracking-normal text-civic-ink shadow-sm transition hover:bg-[#d7ff76] focus:outline-none focus:ring-2 focus:ring-civic-green focus:ring-offset-2 focus:ring-offset-civic-ink"
-                >
-                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-                  {t.reportDetail.yesResolved}
-                </button>
-              </form>
-            </Card>
-          ) : null}
-
-          {/* Reopen section */}
-          {canReopen ? (
-            <ReopenForm reportId={report.id} locale={locale} />
-          ) : null}
 
           <Card title={t.common.privacyNote} variant="success">
             <p className="flex gap-3 text-sm leading-6 text-civic-muted">
@@ -367,7 +261,7 @@ export default async function ReportDetailPage({
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-civic-ink">
                 <Image
                   src={report.image_url}
-                  alt={issueLabel(locale, report.issue_type)}
+                  alt={categoryLabel(locale, report.category)}
                   fill
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover"

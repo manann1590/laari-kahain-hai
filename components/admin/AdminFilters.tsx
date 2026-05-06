@@ -1,15 +1,15 @@
-import { ISSUE_TYPES, STATUS_LABELS } from "@/lib/constants";
+import { FOOD_CATEGORIES, STATUS_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 
 export function AdminFilters({
   status,
-  issueType,
+  category,
   search,
 }: {
   status?: string;
-  issueType?: string;
+  category?: string;
   search?: string;
 }) {
   return (
@@ -28,11 +28,11 @@ export function AdminFilters({
       />
       <Select
         label="Cuisine"
-        name="issue_type"
-        defaultValue={issueType || "all"}
+        name="category"
+        defaultValue={category || "all"}
         options={[
           { value: "all", label: "All cuisines" },
-          ...Object.entries(ISSUE_TYPES).map(([value, item]) => ({
+          ...Object.entries(FOOD_CATEGORIES).map(([value, item]) => ({
             value,
             label: item.label,
           })),

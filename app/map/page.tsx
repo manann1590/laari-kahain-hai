@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ExternalLink, Filter, Info, ListFilter, MapPinned, Phone, ShieldCheck } from "lucide-react";
-import { ISSUE_TYPES } from "@/lib/constants";
+import { FOOD_CATEGORIES } from "@/lib/constants";
 import { getRequestLocale } from "@/lib/i18n-server";
-import { getCopy, issueLabel } from "@/lib/i18n";
-import type { IssueType, ReportStatus } from "@/lib/supabase/types";
+import { getCopy, categoryLabel } from "@/lib/i18n";
+import type { FoodCategory } from "@/lib/supabase/types";
 import { getPublicReports } from "@/lib/data/reports";
-import { normalizeIssueType, normalizeStatus } from "@/lib/validators/report";
+import { normalizeFoodCategory } from "@/lib/validators/report";
 import { formatDate, titleFromLocation } from "@/lib/utils";
 import { PageShell } from "@/components/layout/PageShell";
 import { Select } from "@/components/ui/Select";
@@ -30,8 +30,7 @@ export default async function MapPage({
   const params = await searchParams;
   const locale = await getRequestLocale();
   const t = getCopy(locale);
-  const issueType = normalizeIssueType(params.issue_type);
-  const status = normalizeStatus(params.status);
+  const category = normalizeFoodCategory(params.category);
   const district = params.district?.trim();
   const area = params.area?.trim();
   let reports: Awaited<ReturnType<typeof getPublicReports>> = [];
@@ -39,8 +38,7 @@ export default async function MapPage({
 
   try {
     reports = await getPublicReports({
-      issue_type: issueType || "all",
-      status: (status as ReportStatus) || "all",
+      category: category || "all",
       district,
       area,
     });
@@ -74,24 +72,14 @@ export default async function MapPage({
               <form className="grid gap-3">
                 <Select
                   label={t.map.issueType}
-                  name="issue_type"
-                  defaultValue={issueType || "all"}
+                  name="category"
+                  defaultValue={category || "all"}
                   options={[
                     { value: "all", label: t.map.allIssues },
-                    ...Object.keys(ISSUE_TYPES).map((value) => ({
+                    ...Object.keys(FOOD_CATEGORIES).map((value) => ({
                       value,
-                      label: issueLabel(locale, value as IssueType),
+                      label: categoryLabel(locale, value as FoodCategory),
                     })),
-                  ]}
-                />
-                <Select
-                  label={t.map.status}
-                  name="status"
-                  defaultValue={status || "all"}
-                  options={[
-                    { value: "all", label: t.map.verifiedResolved },
-                    { value: "approved", label: t.status.approved },
-                    { value: "resolved", label: t.status.resolved },
                   ]}
                 />
                 <Input label={t.common.area} name="area" defaultValue={area} placeholder="Satellite" />
@@ -127,7 +115,6 @@ export default async function MapPage({
                 title={t.map.noReports}
                 description={t.map.noReportsCopy}
                 action={<Button href="/reports/new">{t.map.submitFirst}</Button>}
-                secondaryAction={<Button href="/leaderboard" variant="secondary">{t.common.leaderboard}</Button>}
               />
             ) : (
               <Card title={t.map.listView} description={t.map.listCopy} className="p-0">
@@ -139,7 +126,7 @@ export default async function MapPage({
                           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-civic-ink">
                             <Image
                               src={report.image_url}
-                              alt={issueLabel(locale, report.issue_type)}
+                              alt={categoryLabel(locale, report.category)}
                               fill
                               sizes="96px"
                               className="object-cover"
@@ -152,8 +139,8 @@ export default async function MapPage({
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className={ISSUE_TYPES[report.issue_type].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
-                              {issueLabel(locale, report.issue_type)}
+                            <span className={FOOD_CATEGORIES[report.category].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
+                              {categoryLabel(locale, report.category)}
                             </span>
                           </div>
                           <h2 className="mt-2 truncate font-black text-white">
@@ -193,7 +180,7 @@ export default async function MapPage({
                                 <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-civic-ink">
                                   <Image
                                     src={report.image_url}
-                                    alt={issueLabel(locale, report.issue_type)}
+                                    alt={categoryLabel(locale, report.category)}
                                     fill
                                     sizes="64px"
                                     className="object-cover"
@@ -207,8 +194,8 @@ export default async function MapPage({
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <span className={ISSUE_TYPES[report.issue_type].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
-                              {issueLabel(locale, report.issue_type)}
+                            <span className={FOOD_CATEGORIES[report.category].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
+                              {categoryLabel(locale, report.category)}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-civic-muted">{titleFromLocation(report.area, report.district)}</td>
@@ -240,7 +227,7 @@ export default async function MapPage({
 
             {reports.length === 0 ? (
               <div className="grid gap-4 md:grid-cols-3">
-                  {[
+                {[
                   { icon: Info, title: t.map.cards[0][0], copy: t.map.cards[0][1] },
                   { icon: ShieldCheck, title: t.map.cards[1][0], copy: t.map.cards[1][1] },
                   { icon: ListFilter, title: t.map.cards[2][0], copy: t.map.cards[2][1] },

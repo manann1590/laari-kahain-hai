@@ -3,8 +3,7 @@ import { subDays } from "date-fns";
 import { createAdminSupabaseClient, createServerSupabaseClient } from "@/lib/supabase/server";
 import type {
   DashboardStats,
-  IssueType,
-  LeaderboardRow,
+  FoodCategory,
   PublicReport,
   Report,
   ReportEvent,
@@ -16,22 +15,12 @@ import type {
 import { reportCreateSchema, reportUpdateSchema } from "@/lib/validators/report";
 import { distanceMeters } from "@/lib/geo";
 
-const PUBLIC_STATUSES: ReportStatus[] = [
-  "approved",
-  "verified",
-  "in_progress",
-  "sent_to_amc",
-  "amc_acknowledged",
-  "resolved_claimed",
-  "citizen_verified_resolved",
-  "reopened",
-  "resolved",
-];
+const PUBLIC_STATUSES: ReportStatus[] = ["approved", "verified"];
 
 const PUBLIC_REPORT_COLUMNS = [
   "id",
   "tracking_id",
-  "issue_type",
+  "category",
   "title",
   "description",
   "latitude",
@@ -59,11 +48,6 @@ const PUBLIC_REPORT_COLUMNS = [
   "created_at",
   "updated_at",
   "approved_at",
-  "resolved_at",
-  "resolved_claimed_at",
-  "citizen_verified_at",
-  "reopened_at",
-  "sent_to_amc_at",
 ].join(",");
 
 function publicClient() {
@@ -90,14 +74,14 @@ function stripUndefined(value: Record<string, unknown>) {
 
 export async function getPublicReports(filters?: ReportFilters): Promise<PublicReport[]> {
   let query = publicClient()
-    .from("reports")
+    .from("vendors")
     .select(PUBLIC_REPORT_COLUMNS)
     .in("status", PUBLIC_STATUSES)
     .order("created_at", { ascending: false })
     .limit(300);
 
-  if (filters?.issue_type && filters.issue_type !== "all") {
-    query = query.eq("issue_type", filters.issue_type);
+  if (filters?.category && filters.category !== "all") {
+    query = query.eq("category", filters.category);
   }
   if (filters?.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
@@ -116,7 +100,7 @@ export async function getPublicReports(filters?: ReportFilters): Promise<PublicR
 
 export async function getPublicReportById(id: string): Promise<PublicReport | null> {
   const { data, error } = await publicClient()
-    .from("reports")
+    .from("vendors")
     .select(PUBLIC_REPORT_COLUMNS)
     .eq("id", id)
     .in("status", PUBLIC_STATUSES)
@@ -128,15 +112,15 @@ export async function getPublicReportById(id: string): Promise<PublicReport | nu
 
 export async function getAdminReports(filters?: ReportFilters): Promise<Report[]> {
   let query = adminClient()
-    .from("reports")
+    .from("vendors")
     .select("*")
     .order("created_at", { ascending: false });
 
   if (filters?.status && filters.status !== "all") {
     query = query.eq("status", filters.status);
   }
-  if (filters?.issue_type && filters.issue_type !== "all") {
-    query = query.eq("issue_type", filters.issue_type);
+  if (filters?.category && filters.category !== "all") {
+    query = query.eq("category", filters.category);
   }
   if (filters?.district) {
     query = query.ilike("district", `%${filters.district}%`);
@@ -161,7 +145,7 @@ export async function getAdminReports(filters?: ReportFilters): Promise<Report[]
 
 export async function getAdminReportById(id: string): Promise<Report | null> {
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .select("*")
     .eq("id", id)
     .maybeSingle();
@@ -172,9 +156,9 @@ export async function getAdminReportById(id: string): Promise<Report | null> {
 
 export async function getReportEvents(reportId: string): Promise<ReportEvent[]> {
   const { data, error } = await adminClient()
-    .from("report_events")
+    .from("vendor_events")
     .select("*")
-    .eq("report_id", reportId)
+    .eq("vendor_id", reportId)
     .order("created_at", { ascending: false });
 
   if (error) throwSupabaseError("Could not load listing events", error);
@@ -184,7 +168,7 @@ export async function getReportEvents(reportId: string): Promise<ReportEvent[]> 
 export async function createReport(input: ReportInsert): Promise<Report> {
   const parsed = reportCreateSchema.parse(input);
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .insert(stripUndefined({
       ...parsed,
       status: "pending",
@@ -195,7 +179,7 @@ export async function createReport(input: ReportInsert): Promise<Report> {
 
   if (error) throwSupabaseError("Could not create listing", error);
 
-  await addReportEvent(data.id, {
+  await addVendorEvent(data.id, {
     event_type: "created",
     new_status: data.status,
     note: "Listing created from admin manual entry.",
@@ -208,9 +192,9 @@ export async function createReport(input: ReportInsert): Promise<Report> {
 export async function createPublicReport(input: ReportInsert): Promise<Report> {
   const parsed = reportCreateSchema.parse(input);
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .insert(stripUndefined({
-      issue_type: parsed.issue_type,
+      category: parsed.category,
       title: parsed.title,
       description: parsed.description,
       latitude: parsed.latitude,
@@ -239,7 +223,7 @@ export async function createPublicReport(input: ReportInsert): Promise<Report> {
 
   if (error) throwSupabaseError("Could not submit listing", error);
 
-  await addReportEvent(data.id, {
+  await addVendorEvent(data.id, {
     event_type: "submitted",
     new_status: data.status,
     note: "Listing submitted through the public portal.",
@@ -258,7 +242,7 @@ export async function updateReport(id: string, input: ReportUpdate): Promise<Rep
   const timestamps = statusChanged ? timestampForStatus(parsed.status) : {};
 
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .update(stripUndefined({
       ...parsed,
       ...timestamps,
@@ -269,7 +253,7 @@ export async function updateReport(id: string, input: ReportUpdate): Promise<Rep
 
   if (error) throwSupabaseError("Could not update listing", error);
 
-  await addReportEvent(id, {
+  await addVendorEvent(id, {
     event_type: statusChanged ? "status_changed" : "updated",
     old_status: existing.status,
     new_status: (data as Report).status,
@@ -287,122 +271,12 @@ export async function rejectReport(id: string, note?: string) {
   return updateStatus(id, "rejected", note || "Listing rejected during review.");
 }
 
-/** @deprecated Use resolveAsClaimedReport instead */
-export async function resolveReport(id: string) {
-  return updateStatus(id, "resolved_claimed", "Listing marked closed.");
-}
-
-export async function resolveAsClaimedReport(
-  id: string,
-  note: string,
-  proofImageUrl?: string,
-): Promise<Report> {
-  if (!note || !note.trim()) {
-    throw new Error("A note is required to mark a listing as closed.");
-  }
-
-  const report = await getAdminReportById(id);
-  if (!report) throw new Error("Listing not found");
-
-  const now = new Date().toISOString();
-  const { data, error } = await adminClient()
-    .from("reports")
-    .update({
-      status: "resolved_claimed",
-      resolved_claimed_at: now,
-    })
-    .eq("id", id)
-    .select("*")
-    .single();
-
-  if (error) throwSupabaseError("Could not mark listing as closed", error);
-
-  await addReportEvent(id, {
-    event_type: "resolved_claimed",
-    old_status: report.status,
-    new_status: "resolved_claimed",
-    note: note.trim(),
-    actor: "admin",
-    proof_image_url: proofImageUrl,
-  });
-
-  return data as Report;
-}
-
-export async function citizenVerifyResolved(id: string): Promise<Report> {
-  const report = await getAdminReportById(id);
-  if (!report) throw new Error("Listing not found");
-
-  const now = new Date().toISOString();
-  const { data, error } = await adminClient()
-    .from("reports")
-    .update({
-      status: "citizen_verified_resolved",
-      citizen_verified_at: now,
-    })
-    .eq("id", id)
-    .select("*")
-    .single();
-
-  if (error) throwSupabaseError("Could not mark listing as community verified closed", error);
-
-  await addReportEvent(id, {
-    event_type: "citizen_verified_resolved",
-    old_status: report.status,
-    new_status: "citizen_verified_resolved",
-    note: "Community member confirmed the vendor is no longer at this spot.",
-    actor: "citizen",
-  });
-
-  return data as Report;
-}
-
-export async function reopenReport(
-  id: string,
-  reason: string,
-  note?: string,
-  proofImageUrl?: string,
-): Promise<Report> {
-  if (!reason || !reason.trim()) {
-    throw new Error("A reason is required to reopen a listing.");
-  }
-
-  const report = await getAdminReportById(id);
-  if (!report) throw new Error("Listing not found");
-
-  const now = new Date().toISOString();
-  const { data, error } = await adminClient()
-    .from("reports")
-    .update({
-      status: "reopened",
-      reopened_at: now,
-    })
-    .eq("id", id)
-    .select("*")
-    .single();
-
-  if (error) throwSupabaseError("Could not reopen listing", error);
-
-  const eventNote = [reason.trim(), note?.trim()].filter(Boolean).join(" — ");
-
-  await addReportEvent(id, {
-    event_type: "reopened",
-    old_status: report.status,
-    new_status: "reopened",
-    note: eventNote,
-    actor: "citizen",
-    proof_image_url: proofImageUrl,
-  });
-
-  return data as Report;
-}
-
 export async function markDuplicate(id: string, duplicateOfId: string) {
   const report = await getAdminReportById(id);
   if (!report) throw new Error("Listing not found");
 
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .update({
       status: "duplicate",
       duplicate_of: duplicateOfId,
@@ -413,7 +287,7 @@ export async function markDuplicate(id: string, duplicateOfId: string) {
 
   if (error) throwSupabaseError("Could not mark duplicate", error);
 
-  await addReportEvent(id, {
+  await addVendorEvent(id, {
     event_type: "duplicate",
     old_status: report.status,
     new_status: "duplicate",
@@ -428,7 +302,7 @@ export async function updateStatus(id: string, status: ReportStatus, note: strin
   if (!report) throw new Error("Listing not found");
 
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .update({
       status,
       ...timestampForStatus(status),
@@ -439,7 +313,7 @@ export async function updateStatus(id: string, status: ReportStatus, note: strin
 
   if (error) throwSupabaseError(`Could not set listing status to ${status}`, error);
 
-  await addReportEvent(id, {
+  await addVendorEvent(id, {
     event_type: status,
     old_status: report.status,
     new_status: status,
@@ -454,18 +328,11 @@ function timestampForStatus(status?: ReportStatus) {
   if (status === "approved") return { approved_at: now, rejected_at: null };
   if (status === "verified") return { approved_at: now, rejected_at: null };
   if (status === "rejected") return { rejected_at: now };
-  if (status === "resolved") return { resolved_at: now };
-  if (status === "resolved_claimed") return { resolved_claimed_at: now };
-  if (status === "citizen_verified_resolved") return { citizen_verified_at: now };
-  if (status === "reopened") return { reopened_at: now };
-  if (status === "sent_to_amc") return { sent_to_amc_at: now };
-  if (status === "in_progress") return {};
-  if (status === "amc_acknowledged") return {};
   return {};
 }
 
-export async function addReportEvent(
-  reportId: string,
+export async function addVendorEvent(
+  vendorId: string,
   event: {
     event_type: string;
     old_status?: ReportStatus | null;
@@ -475,8 +342,8 @@ export async function addReportEvent(
     proof_image_url?: string | null;
   },
 ) {
-  const { error } = await adminClient().from("report_events").insert({
-    report_id: reportId,
+  const { error } = await adminClient().from("vendor_events").insert({
+    vendor_id: vendorId,
     actor: event.actor || "admin",
     ...event,
   });
@@ -487,14 +354,14 @@ export async function addReportEvent(
 export async function getNearbyReports(
   latitude: number,
   longitude: number,
-  issueType: IssueType,
+  category: FoodCategory,
   excludeId: string,
   radiusMeters = 100,
 ): Promise<Report[]> {
   const { data, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .select("*")
-    .eq("issue_type", issueType)
+    .eq("category", category)
     .neq("id", excludeId)
     .in("status", PUBLIC_STATUSES);
 
@@ -506,89 +373,19 @@ export async function getNearbyReports(
   );
 }
 
-export async function getLeaderboard(): Promise<LeaderboardRow[]> {
-  const { data, error } = await publicClient()
-    .from("reports")
-    .select("issue_type, status, area, district")
-    .in("status", PUBLIC_STATUSES);
-
-  if (error) throwSupabaseError("Could not load leaderboard", error);
-
-  const RESOLVED_STATUSES: ReportStatus[] = [
-    "resolved",
-    "resolved_claimed",
-    "citizen_verified_resolved",
-  ];
-  const OPEN_STATUSES: ReportStatus[] = [
-    "approved",
-    "verified",
-    "in_progress",
-    "sent_to_amc",
-    "amc_acknowledged",
-    "reopened",
-  ];
-
-  const groups = new Map<
-    string,
-    {
-      area: string;
-      district: string;
-      open_count: number;
-      resolved_count: number;
-      issueCounts: Map<IssueType, number>;
-    }
-  >();
-
-  for (const report of (data || []) as Pick<
-    Report,
-    "issue_type" | "status" | "area" | "district"
-  >[]) {
-    const area = report.area || "Unknown area";
-    const district = report.district || "Ahmedabad";
-    const key = `${area}__${district}`;
-    const group =
-      groups.get(key) ||
-      {
-        area,
-        district,
-        open_count: 0,
-        resolved_count: 0,
-        issueCounts: new Map<IssueType, number>(),
-      };
-
-    if (RESOLVED_STATUSES.includes(report.status as ReportStatus)) group.resolved_count += 1;
-    if (OPEN_STATUSES.includes(report.status as ReportStatus)) group.open_count += 1;
-    group.issueCounts.set(report.issue_type, (group.issueCounts.get(report.issue_type) || 0) + 1);
-    groups.set(key, group);
-  }
-
-  return [...groups.values()]
-    .sort((a, b) => b.open_count - a.open_count || b.resolved_count - a.resolved_count)
-    .map((group, index) => ({
-      rank: index + 1,
-      area: group.area,
-      district: group.district,
-      open_count: group.open_count,
-      resolved_count: group.resolved_count,
-      top_issue_type:
-        [...group.issueCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || "other",
-    }));
-}
-
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const [approved, verified, pending, resolved, rejected, recent, publicReports] = await Promise.all([
+  const [approved, verified, pending, rejected, recent, publicReports] = await Promise.all([
     countReports("approved"),
     countReports("verified"),
     countReports("pending"),
-    countReports("resolved"),
     countReports("rejected"),
     adminClient()
-      .from("reports")
+      .from("vendors")
       .select("id", { count: "exact", head: true })
       .gte("created_at", subDays(new Date(), 7).toISOString()),
     publicClient()
-      .from("reports")
-      .select("issue_type, area, district")
+      .from("vendors")
+      .select("category, area, district")
       .in("status", ["approved", "verified"]),
   ]);
 
@@ -597,13 +394,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     throwSupabaseError("Could not load dashboard breakdown", publicReports.error);
   }
 
-  const issueCounts = new Map<IssueType, number>();
+  const categoryCounts = new Map<FoodCategory, number>();
   const locationCounts = new Map<string, number>();
-  for (const report of (publicReports.data || []) as Pick<
-    Report,
-    "issue_type" | "area" | "district"
-  >[]) {
-    issueCounts.set(report.issue_type, (issueCounts.get(report.issue_type) || 0) + 1);
+  for (const report of (publicReports.data || []) as Pick<Report, "category" | "area" | "district">[]) {
+    categoryCounts.set(report.category, (categoryCounts.get(report.category) || 0) + 1);
     const location = [report.area, report.district].filter(Boolean).join(", ");
     if (location) locationCounts.set(location, (locationCounts.get(location) || 0) + 1);
   }
@@ -611,27 +405,24 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   return {
     totalApproved: approved + verified,
     pending,
-    resolved,
     rejected,
     reportsThisWeek: recent.count || 0,
-    topIssueType: [...issueCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
-    topDistrictArea:
-      [...locationCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
+    topCategory: [...categoryCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
+    topDistrictArea: [...locationCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
   };
 }
 
 export async function getPublicDashboardStats(): Promise<DashboardStats> {
-  const [approved, resolved, recent, publicReports] = await Promise.all([
+  const [approved, recent, publicReports] = await Promise.all([
     countPublicReports(["approved", "verified"]),
-    countPublicReports(["resolved", "resolved_claimed", "citizen_verified_resolved"]),
     publicClient()
-      .from("reports")
+      .from("vendors")
       .select("id", { count: "exact", head: true })
       .in("status", PUBLIC_STATUSES)
       .gte("created_at", subDays(new Date(), 7).toISOString()),
     publicClient()
-      .from("reports")
-      .select("issue_type, area, district")
+      .from("vendors")
+      .select("category, area, district")
       .in("status", ["approved", "verified"]),
   ]);
 
@@ -640,13 +431,10 @@ export async function getPublicDashboardStats(): Promise<DashboardStats> {
     throwSupabaseError("Could not load public stats breakdown", publicReports.error);
   }
 
-  const issueCounts = new Map<IssueType, number>();
+  const categoryCounts = new Map<FoodCategory, number>();
   const locationCounts = new Map<string, number>();
-  for (const report of (publicReports.data || []) as Pick<
-    Report,
-    "issue_type" | "area" | "district"
-  >[]) {
-    issueCounts.set(report.issue_type, (issueCounts.get(report.issue_type) || 0) + 1);
+  for (const report of (publicReports.data || []) as Pick<Report, "category" | "area" | "district">[]) {
+    categoryCounts.set(report.category, (categoryCounts.get(report.category) || 0) + 1);
     const location = [report.area, report.district].filter(Boolean).join(", ");
     if (location) locationCounts.set(location, (locationCounts.get(location) || 0) + 1);
   }
@@ -654,18 +442,16 @@ export async function getPublicDashboardStats(): Promise<DashboardStats> {
   return {
     totalApproved: approved,
     pending: 0,
-    resolved,
     rejected: 0,
     reportsThisWeek: recent.count || 0,
-    topIssueType: [...issueCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
-    topDistrictArea:
-      [...locationCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
+    topCategory: [...categoryCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
+    topDistrictArea: [...locationCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null,
   };
 }
 
 async function countReports(status: ReportStatus) {
   const { count, error } = await adminClient()
-    .from("reports")
+    .from("vendors")
     .select("id", { count: "exact", head: true })
     .eq("status", status);
 
@@ -675,21 +461,21 @@ async function countReports(status: ReportStatus) {
 
 async function countPublicReports(statuses: ReportStatus[]) {
   const { count, error } = await publicClient()
-    .from("reports")
+    .from("vendors")
     .select("id", { count: "exact", head: true })
     .in("status", statuses);
 
-  if (error) throwSupabaseError(`Could not count public listings`, error);
+  if (error) throwSupabaseError("Could not count public listings", error);
   return count || 0;
 }
 
-export async function getIssueTypeCounts() {
+export async function getCategoryCounts() {
   const reports = await getPublicReports({ status: "approved" });
-  const counts = new Map<IssueType, number>();
+  const counts = new Map<FoodCategory, number>();
   for (const report of reports) {
-    counts.set(report.issue_type, (counts.get(report.issue_type) || 0) + 1);
+    counts.set(report.category, (counts.get(report.category) || 0) + 1);
   }
   return [...counts.entries()]
-    .map(([issue_type, count]) => ({ issue_type, count }))
+    .map(([category, count]) => ({ category, count }))
     .sort((a, b) => b.count - a.count);
 }

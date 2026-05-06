@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { AlertTriangle, LogOut, Plus } from "lucide-react";
 import { requireAdmin } from "@/lib/data/admin";
 import { getAdminReports, getDashboardStats } from "@/lib/data/reports";
-import { normalizeIssueType, normalizeStatus } from "@/lib/validators/report";
+import { normalizeFoodCategory, normalizeStatus } from "@/lib/validators/report";
 import { logoutAction } from "@/app/admin/actions";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
@@ -23,7 +23,7 @@ export default async function AdminDashboardPage({
   await requireAdmin();
   const params = await searchParams;
   const status = normalizeStatus(params.status);
-  const issueType = normalizeIssueType(params.issue_type);
+  const category = normalizeFoodCategory(params.category);
   const search = params.search?.trim();
 
   let data:
@@ -38,7 +38,7 @@ export default async function AdminDashboardPage({
     const [reports, stats] = await Promise.all([
       getAdminReports({
         status: status || "all",
-        issue_type: issueType || "all",
+        category: category || "all",
         search,
       }),
       getDashboardStats(),
@@ -91,7 +91,7 @@ export default async function AdminDashboardPage({
               </div>
             </div>
           ) : null}
-          <AdminFilters status={status} issueType={issueType} search={search} />
+          <AdminFilters status={status} category={category} search={search} />
           <AdminReportTable reports={data.reports} />
         </div>
       )}

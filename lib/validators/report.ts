@@ -1,10 +1,10 @@
 import { z } from "zod";
 import {
-  ISSUE_TYPE_VALUES,
+  FOOD_CATEGORY_VALUES,
   SEVERITY_VALUES,
   STATUS_VALUES,
 } from "@/lib/constants";
-import type { IssueType, ReportStatus, Severity } from "@/lib/supabase/types";
+import type { FoodCategory, ReportStatus, Severity } from "@/lib/supabase/types";
 
 const optionalText = z
   .string()
@@ -13,7 +13,7 @@ const optionalText = z
   .optional();
 
 export const reportCreateSchema = z.object({
-  issue_type: z.enum(ISSUE_TYPE_VALUES as [IssueType, ...IssueType[]]),
+  category: z.enum(FOOD_CATEGORY_VALUES as [FoodCategory, ...FoodCategory[]]),
   title: optionalText,
   description: optionalText,
   latitude: z.coerce.number().min(-90).max(90),
@@ -45,9 +45,9 @@ export const reportUpdateSchema = reportCreateSchema
     duplicate_of: optionalText,
   });
 
-export function normalizeIssueType(value: unknown): IssueType | undefined {
+export function normalizeFoodCategory(value: unknown): FoodCategory | undefined {
   if (typeof value !== "string") return undefined;
-  return ISSUE_TYPE_VALUES.includes(value as IssueType) ? (value as IssueType) : undefined;
+  return FOOD_CATEGORY_VALUES.includes(value as FoodCategory) ? (value as FoodCategory) : undefined;
 }
 
 export function normalizeStatus(value: unknown): ReportStatus | undefined {

@@ -1,15 +1,14 @@
 import Image from "next/image";
-import { Check, Eye, RotateCw, X } from "lucide-react";
+import { Check, Eye, X } from "lucide-react";
 import type { Report } from "@/lib/supabase/types";
-import { ISSUE_TYPES } from "@/lib/constants";
+import { FOOD_CATEGORIES } from "@/lib/constants";
 import { formatDate, titleFromLocation } from "@/lib/utils";
 import {
   approveReportAction,
   rejectReportAction,
-  markInProgressAction,
 } from "@/app/admin/actions";
 import { Button } from "@/components/ui/Button";
-import { IssueTypeBadge } from "@/components/reports/IssueTypeBadge";
+import { CategoryBadge } from "@/components/reports/CategoryBadge";
 import { ReportStatusBadge } from "@/components/reports/ReportStatusBadge";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -35,7 +34,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-civic-soft">
                   <Image
                     src={report.image_url}
-                    alt={ISSUE_TYPES[report.issue_type].label}
+                    alt={FOOD_CATEGORIES[report.category].label}
                     fill
                     sizes="96px"
                     className="object-cover"
@@ -46,7 +45,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
               )}
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap gap-2">
-                  <IssueTypeBadge issueType={report.issue_type} />
+                  <CategoryBadge category={report.category} />
                   <ReportStatusBadge status={report.status} />
                 </div>
                 {report.tracking_id ? (
@@ -55,7 +54,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                   </p>
                 ) : null}
                 <h2 className="mt-1 truncate font-black text-white">
-                  {report.title || ISSUE_TYPES[report.issue_type].label}
+                  {report.title || FOOD_CATEGORIES[report.category].label}
                 </h2>
                 <p className="mt-1 text-sm text-civic-muted">
                   {titleFromLocation(report.area, report.district)}
@@ -87,14 +86,6 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                   </form>
                 </>
               ) : null}
-              {report.status === "approved" || report.status === "verified" ? (
-                <form action={markInProgressAction.bind(null, report.id)}>
-                  <Button size="sm" variant="outline" type="submit" className="w-full">
-                    <RotateCw className="h-4 w-4" aria-hidden="true" />
-                    In progress
-                  </Button>
-                </form>
-              ) : null}
             </div>
           </article>
         ))}
@@ -123,7 +114,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                     <div className="relative h-14 w-20 overflow-hidden rounded bg-civic-ink">
                       <Image
                         src={report.image_url}
-                        alt={ISSUE_TYPES[report.issue_type].label}
+                        alt={FOOD_CATEGORIES[report.category].label}
                         fill
                         sizes="80px"
                         className="object-cover"
@@ -134,9 +125,9 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <IssueTypeBadge issueType={report.issue_type} />
+                  <CategoryBadge category={report.category} />
                   <p className="mt-2 max-w-xs truncate font-black text-white">
-                    {report.title || ISSUE_TYPES[report.issue_type].label}
+                    {report.title || FOOD_CATEGORIES[report.category].label}
                   </p>
                 </td>
                 <td className="px-4 py-3">
@@ -177,14 +168,6 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                           </Button>
                         </form>
                       </>
-                    ) : null}
-                    {report.status === "approved" || report.status === "verified" ? (
-                      <form action={markInProgressAction.bind(null, report.id)}>
-                        <Button size="sm" variant="outline" type="submit">
-                          <RotateCw className="h-4 w-4" aria-hidden="true" />
-                          In progress
-                        </Button>
-                      </form>
                     ) : null}
                   </div>
                 </td>

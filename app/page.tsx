@@ -14,42 +14,41 @@ import {
   ShieldCheck,
   Soup,
   Star,
-  Trophy,
   Utensils,
   Zap,
 } from "lucide-react";
-import type { IssueType } from "@/lib/supabase/types";
+import type { FoodCategory } from "@/lib/supabase/types";
 import { getMissingPublicConfig } from "@/lib/config";
 import { getPublicDashboardStats } from "@/lib/data/reports";
 import { getRequestLocale } from "@/lib/i18n-server";
-import { getCopy, issueDescription, issueLabel } from "@/lib/i18n";
+import { getCopy, categoryDescription, categoryLabel } from "@/lib/i18n";
 import { Button } from "@/components/ui/Button";
 import { StatCard } from "@/components/ui/StatCard";
 
 export const revalidate = 300;
 
 const categoryOrder = [
-  "pothole",
-  "broken_streetlight",
-  "garbage",
-  "waterlogging",
-  "damaged_road",
-  "damaged_footpath",
-  "open_manhole",
-  "damaged_public_property",
+  "chaat_snacks",
+  "tea_coffee",
+  "meals_thali",
+  "fast_food",
+  "south_indian",
+  "desserts",
+  "juice_shakes",
+  "street_chinese",
 ] as const;
 
-const issueIcons: Record<IssueType, typeof MapPin> = {
-  pothole: Sandwich,
-  broken_streetlight: Coffee,
-  garbage: Utensils,
-  waterlogging: Pizza,
-  damaged_road: Soup,
-  damaged_footpath: CupSoda,
-  open_manhole: Zap,
-  damaged_public_property: Star,
-  drainage: Clock,
-  illegal_dumping: MapPin,
+const issueIcons: Record<FoodCategory, typeof MapPin> = {
+  chaat_snacks: Sandwich,
+  tea_coffee: Coffee,
+  meals_thali: Utensils,
+  fast_food: Pizza,
+  south_indian: Soup,
+  desserts: CupSoda,
+  juice_shakes: Zap,
+  street_chinese: Star,
+  breakfast: Clock,
+  late_night: MapPin,
   other: MapPinned,
 };
 
@@ -148,7 +147,7 @@ export default async function HomePage() {
               </h1>
 
               <p className="mt-5 max-w-lg text-base leading-7 text-white/85 sm:text-lg">
-                Find Ahmedabad's food trucks, laris, and carts before they roll to the next
+                Find Ahmedabad&apos;s food trucks, laris, and carts before they roll to the next
                 corner&nbsp;— menu, photo, phone, and live location in one tap.
               </p>
 
@@ -230,7 +229,7 @@ export default async function HomePage() {
                       <Zap className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <div>
-                      <p className="text-sm font-black text-civic-text">Tonight's shortlist</p>
+                      <p className="text-sm font-black text-civic-text">Tonight&apos;s shortlist</p>
                       <p className="text-xs text-civic-muted">Map · table · call · go</p>
                     </div>
                   </div>
@@ -290,7 +289,7 @@ export default async function HomePage() {
           tone="blue"
         />
         <StatCard
-          icon={Trophy}
+          icon={Star}
           value={stats?.topDistrictArea || "Open"}
           label={t.home.topIssue}
           helperText={stats?.topDistrictArea || "Food board begins after verified listings."}
@@ -313,10 +312,6 @@ export default async function HomePage() {
                 Filter by cuisine, neighbourhood, hours, and price to find the right lari fast.
               </p>
             </div>
-            <Button href="/leaderboard" variant="secondary">
-              Food Board
-              <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
-            </Button>
           </div>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -325,7 +320,7 @@ export default async function HomePage() {
               return (
                 <a
                   key={issueType}
-                  href={`/map?issue_type=${issueType}`}
+                  href={`/map?category=${issueType}`}
                   className="group flex min-h-40 flex-col justify-between rounded-2xl border border-civic-line bg-civic-bg p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-civic-orange/50 hover:bg-white hover:shadow-glow"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -335,9 +330,9 @@ export default async function HomePage() {
                     <ArrowRight className="h-4 w-4 text-civic-muted/40 transition-all group-hover:translate-x-0.5 group-hover:text-civic-orange/70" aria-hidden="true" />
                   </div>
                   <div>
-                    <h3 className="font-black text-civic-text">{issueLabel(locale, issueType)}</h3>
+                    <h3 className="font-black text-civic-text">{categoryLabel(locale, issueType)}</h3>
                     <p className="mt-1 text-xs leading-5 text-civic-muted">
-                      {issueDescription(locale, issueType)}
+                      {categoryDescription(locale, issueType)}
                     </p>
                   </div>
                 </a>
@@ -436,10 +431,6 @@ export default async function HomePage() {
                 <Button href="/map">
                   Open food map
                   <MapPinned className="h-3.5 w-3.5" aria-hidden="true" />
-                </Button>
-                <Button href="/leaderboard" variant="secondary">
-                  Food board
-                  <Trophy className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
               </div>
             </div>

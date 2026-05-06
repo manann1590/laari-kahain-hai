@@ -1,4 +1,4 @@
-import type { IssueType, ReportStatus, Severity } from "@/lib/supabase/types";
+import type { FoodCategory, ReportStatus, Severity } from "@/lib/supabase/types";
 
 export const LOCALES = ["en", "hi", "gu"] as const;
 export type Locale = (typeof LOCALES)[number];
@@ -50,32 +50,25 @@ export const copy = {
       referenceId: "Reference ID",
       language: "Language",
     },
-    issueTypes: {
-      pothole: ["Chaat & Snacks", "Pani puri, bhel, dabeli, vada pav, sandwiches, and quick bites"],
-      broken_streetlight: ["Tea & Coffee", "Chai, coffee, cocoa, coolers, and tiny hangout counters"],
-      garbage: ["Meals & Thali", "Lunch plates, dinner boxes, paratha, khichdi, rice bowls, and full meals"],
-      waterlogging: ["Fast Food", "Burgers, pizzas, fries, rolls, wraps, momos, and fusion plates"],
-      damaged_road: ["South Indian", "Dosa, idli, uttapam, medu vada, filter coffee, and podi magic"],
-      damaged_footpath: ["Desserts", "Ice cream, kulfi, falooda, waffles, cakes, and sweet cravings"],
-      open_manhole: ["Juice & Shakes", "Fresh juice, soda, lassi, shakes, smoothies, and summer rescue"],
-      damaged_public_property: ["Street Chinese", "Noodles, manchurian, fried rice, chilli paneer, and wok counters"],
-      drainage: ["Breakfast", "Poha, fafda, jalebi, maska bun, eggs, and morning staples"],
-      illegal_dumping: ["Late Night", "After-hours bites, chai, rolls, maggi, eggs, and midnight saviors"],
+    categories: {
+      chaat_snacks: ["Chaat & Snacks", "Pani puri, bhel, dabeli, vada pav, sandwiches, and quick bites"],
+      tea_coffee: ["Tea & Coffee", "Chai, coffee, cocoa, coolers, and tiny hangout counters"],
+      meals_thali: ["Meals & Thali", "Lunch plates, dinner boxes, paratha, khichdi, rice bowls, and full meals"],
+      fast_food: ["Fast Food", "Burgers, pizzas, fries, rolls, wraps, momos, and fusion plates"],
+      south_indian: ["South Indian", "Dosa, idli, uttapam, medu vada, filter coffee, and podi magic"],
+      desserts: ["Desserts", "Ice cream, kulfi, falooda, waffles, cakes, and sweet cravings"],
+      juice_shakes: ["Juice & Shakes", "Fresh juice, soda, lassi, shakes, smoothies, and summer rescue"],
+      street_chinese: ["Street Chinese", "Noodles, manchurian, fried rice, chilli paneer, and wok counters"],
+      breakfast: ["Breakfast", "Poha, fafda, jalebi, maska bun, eggs, and morning staples"],
+      late_night: ["Late Night", "After-hours bites, chai, rolls, maggi, eggs, and midnight saviors"],
       other: ["Other Food Lari", "Anything tasty that does not fit the usual buckets"],
-    } satisfies Record<IssueType, [string, string]>,
+    } satisfies Record<FoodCategory, [string, string]>,
     status: {
       pending: "Pending Review",
       approved: "Verified",
       verified: "Verified",
       rejected: "Rejected",
       duplicate: "Duplicate",
-      in_progress: "In Progress",
-      sent_to_amc: "Exported",
-      amc_acknowledged: "Acknowledged",
-      resolved_claimed: "Closed (Unverified)",
-      citizen_verified_resolved: "Closed & Verified",
-      reopened: "Reopened",
-      resolved: "Closed",
     } satisfies Record<ReportStatus, string>,
     severity: {
       low: "Low",
@@ -240,14 +233,14 @@ export const copy = {
       rank: "Rank",
       areaDistrict: "Area/District",
       openIssues: "Open vendors",
-      topIssueType: "Top cuisine",
+      topCategory: "Top cuisine",
       latestReport: "Latest vendor",
       latestActivity: "Latest verified activity",
       open: "open",
       stats: {
         totalApproved: ["Verified Vendors", "Public listings after admin review.", "Pilot just started."],
         pending: ["Pending Review", "Needs moderation before publishing.", "Needs moderation before publishing."],
-        resolved: ["Closed Listings", "Vendors marked closed or inactive.", "Vendors marked closed or inactive."],
+        rejected: ["Rejected Listings", "Vendors not approved after review.", "Vendors not approved after review."],
         reportsThisWeek: ["New This Week", "Recent food-map activity.", "Recent food-map activity."],
       },
     },
@@ -339,18 +332,18 @@ export const copy = {
       referenceId: "Reference ID",
       language: "भाषा",
     },
-    issueTypes: {
-      pothole: ["गड्ढा", "सड़क पर गड्ढा या खतरनाक टूट-फूट"],
-      broken_streetlight: ["खराब स्ट्रीटलाइट", "स्ट्रीटलाइट बंद है या बिजली फिटिंग असुरक्षित है"],
-      garbage: ["कचरे का ढेर", "न उठाया गया कचरा या भरा हुआ कूड़ादान"],
-      waterlogging: ["पानी भरना", "खड़ा पानी या ड्रेनेज रुकावट"],
-      damaged_road: ["खराब सड़क", "टूटी, ऊबड़-खाबड़ या असुरक्षित सड़क"],
-      damaged_footpath: ["खराब फुटपाथ", "असुरक्षित पैदल मार्ग या टूटी टाइलें"],
-      open_manhole: ["खुला मैनहोल", "खुला या टूटा मैनहोल ढक्कन"],
-      damaged_public_property: ["खराब सार्वजनिक संपत्ति", "सार्वजनिक संकेत, रेलिंग, बेंच या अन्य संपत्ति को नुकसान"],
-      drainage: ["ड्रेनेज समस्या", "ब्लॉक या टूटा नाला, सीवेज ओवरफ्लो"],
-      illegal_dumping: ["अवैध कचरा फेंकना", "सार्वजनिक या गलत जगह पर फेंका गया कचरा"],
-      other: ["अन्य", "समीक्षा की जरूरत वाली अन्य नागरिक समस्या"],
+    categories: {
+      chaat_snacks: ["चाट और नाश्ता", "पानी पुरी, भेल, दाबेली, वड़ा पाव, सैंडविच, और जल्दी खाने वाली चीज़ें"],
+      tea_coffee: ["चाय और कॉफी", "चाय, कॉफी, कोको, कूलर, और छोटे अड्डे"],
+      meals_thali: ["थाली और भोजन", "लंच थाली, डिनर बॉक्स, पराठा, खिचड़ी, राइस बाउल, और पूरा खाना"],
+      fast_food: ["फास्ट फूड", "बर्गर, पिज्जा, फ्राइज़, रोल, रैप, मोमो, और फ्यूजन"],
+      south_indian: ["साउथ इंडियन", "डोसा, इडली, उत्तपम, मेदू वड़ा, फिल्टर कॉफी"],
+      desserts: ["मिठाई और डेज़र्ट", "आइसक्रीम, कुल्फी, फालूदा, वेफल, केक"],
+      juice_shakes: ["जूस और शेक", "ताज़ा जूस, सोडा, लस्सी, शेक, स्मूदी"],
+      street_chinese: ["स्ट्रीट चाइनीज़", "नूडल्स, मंचूरियन, फ्राइड राइस, चिली पनीर"],
+      breakfast: ["नाश्ता", "पोहा, फाफड़ा, जलेबी, मस्का बन, अंडे, और सुबह के व्यंजन"],
+      late_night: ["लेट नाइट", "रात के खाने, चाय, रोल, मैगी, अंडे"],
+      other: ["अन्य", "कोई भी स्वादिष्ट लारी जो सामान्य श्रेणी में नहीं आती"],
     },
     status: {
       pending: "समीक्षा बाकी",
@@ -358,13 +351,6 @@ export const copy = {
       verified: "सत्यापित",
       rejected: "अस्वीकृत",
       duplicate: "डुप्लिकेट",
-      in_progress: "कार्य जारी",
-      sent_to_amc: "एएमसी को भेजा गया",
-      amc_acknowledged: "एएमसी ने स्वीकार किया",
-      resolved_claimed: "हल बताया गया",
-      citizen_verified_resolved: "हल और सत्यापित",
-      reopened: "फिर खोला गया",
-      resolved: "हल हुआ",
     },
     severity: { low: "कम", medium: "मध्यम", high: "उच्च", critical: "गंभीर" },
     home: {
@@ -519,14 +505,14 @@ export const copy = {
       rank: "रैंक",
       areaDistrict: "इलाका/जिला",
       openIssues: "खुली समस्याएं",
-      topIssueType: "मुख्य समस्या प्रकार",
+      topCategory: "शीर्ष व्यंजन",
       latestReport: "नई रिपोर्ट",
       latestActivity: "नई सत्यापित गतिविधि",
       open: "खुली",
       stats: {
         totalApproved: ["सत्यापित समस्याएं", "एडमिन समीक्षा के बाद सार्वजनिक रिपोर्ट।", "पायलट अभी शुरू हुआ है।"],
         pending: ["समीक्षा बाकी", "प्रकाशन से पहले मॉडरेशन जरूरी।", "प्रकाशन से पहले मॉडरेशन जरूरी।"],
-        resolved: ["हल हुई समस्याएं", "सार्वजनिक प्रगति संकेत।", "सार्वजनिक प्रगति संकेत।"],
+        rejected: ["अस्वीकृत लिस्टिंग", "समीक्षा के बाद अस्वीकृत किए गए।", "समीक्षा के बाद अस्वीकृत किए गए।"],
         reportsThisWeek: ["इस सप्ताह रिपोर्ट", "हाल की नागरिक गतिविधि।", "हाल की नागरिक गतिविधि।"],
       },
     },
@@ -618,18 +604,18 @@ export const copy = {
       referenceId: "Reference ID",
       language: "ભાષા",
     },
-    issueTypes: {
-      pothole: ["ખાડો", "રસ્તાનો ખાડો અથવા જોખમી તૂટફૂટ"],
-      broken_streetlight: ["ખરાબ સ્ટ્રીટલાઇટ", "સ્ટ્રીટલાઇટ બંધ છે અથવા ઇલેક્ટ્રિકલ ફિટિંગ અસુરક્ષિત છે"],
-      garbage: ["કચરાનો ઢગલો", "ન ઉઠાવેલો કચરો અથવા ભરાયેલો ડબ્બો"],
-      waterlogging: ["પાણી ભરાવું", "ઊભું પાણી અથવા ડ્રેનેજ અવરોધ"],
-      damaged_road: ["ખરાબ રસ્તો", "તૂટેલો, ઊંચા-નીચા અથવા અસુરક્ષિત રસ્તો"],
-      damaged_footpath: ["ખરાબ ફૂટપાથ", "અસુરક્ષિત પગપાળા માર્ગ અથવા તૂટેલી ટાઇલ્સ"],
-      open_manhole: ["ખુલ્લું મેનહોલ", "ખુલ્લું અથવા તૂટેલું મેનહોલ ઢાંકણ"],
-      damaged_public_property: ["ખરાબ જાહેર સંપત્તિ", "જાહેર સાઇન, રેલિંગ, બેન્ચ અથવા અન્ય સંપત્તિને નુકસાન"],
-      drainage: ["ડ્રેનેજ સમસ્યા", "બ્લોક અથવા તૂટેલી ગટર, ગંદા પાણીનો ઓવરફ્લો"],
-      illegal_dumping: ["ગેરકાયદે કચરો નાખવો", "જાહેર અથવા અયોગ્ય જગ્યાએ નાખેલો કચરો"],
-      other: ["અન્ય", "સમીક્ષા જરૂરી અન્ય નાગરિક સમસ્યા"],
+    categories: {
+      chaat_snacks: ["ચાટ અને નાસ્તો", "પાણી પુરી, ભેળ, દાબેળી, વડા પાવ, સેન્ડવિચ, અને ઝટપટ ખાણી"],
+      tea_coffee: ["ચા અને કોફી", "ચા, કોફી, કોકો, કૂલર, અને નાના અડ્ડા"],
+      meals_thali: ["થાળી અને ભોજન", "લંચ થાળી, ડિનર બોક્સ, પરાઠા, ખીચડી, ભાત, અને પૂર્ણ ભોજન"],
+      fast_food: ["ફાસ્ટ ફૂડ", "બર્ગર, પિઝ્ઝા, ફ્રાઇઝ, રોલ, રૅપ, મોમો, અને ફ્યૂઝન"],
+      south_indian: ["સાઉથ ઇન્ડિયન", "ડોસા, ઇડલી, ઉત્તપમ, મેદૂ વડા, ફિલ્ટર કોફી"],
+      desserts: ["મીઠાઈ અને ડેઝર્ટ", "આઇસક્રીમ, કૂલ્ફી, ફાલૂદા, વેફલ, કેક"],
+      juice_shakes: ["જ્યૂસ અને શેક", "તાજો જ્યૂસ, સોડા, લસ્સી, શેક, સ્મૂધી"],
+      street_chinese: ["સ્ટ્રીટ ચાઇનીઝ", "નૂડલ્સ, મંચૂરિયન, ફ્રાઇડ રાઇસ, ચિલ્લી પનીર"],
+      breakfast: ["નાસ્તો", "પોહા, ફાફડા, જલેબી, મસ્કા બન, ઇંડા, અને સવારની ખાણી"],
+      late_night: ["લેટ નાઇટ", "રાત્રિ ખાણી, ચા, રોલ, મૅગી, ઇંડા"],
+      other: ["અન્ય", "કોઈ પણ સ્વાદિષ્ટ લારી જે સામાન્ય શ્રેણીમાં ન આવે"],
     },
     status: {
       pending: "સમીક્ષા બાકી",
@@ -637,13 +623,6 @@ export const copy = {
       verified: "ચકાસાયેલ",
       rejected: "નકારાયું",
       duplicate: "ડુપ્લિકેટ",
-      in_progress: "કામ ચાલુ",
-      sent_to_amc: "AMC ને મોકલ્યું",
-      amc_acknowledged: "AMC એ સ્વીકાર્યું",
-      resolved_claimed: "ઉકેલાયું કહેવાયું",
-      citizen_verified_resolved: "ઉકેલાયું અને ચકાસાયું",
-      reopened: "ફરી ખોલાયું",
-      resolved: "ઉકેલાયું",
     },
     severity: { low: "ઓછું", medium: "મધ્યમ", high: "ઉચ્ચ", critical: "ગંભીર" },
     home: {
@@ -798,14 +777,14 @@ export const copy = {
       rank: "રેન્ક",
       areaDistrict: "વિસ્તાર/જિલ્લો",
       openIssues: "ખુલ્લી સમસ્યાઓ",
-      topIssueType: "મુખ્ય સમસ્યા પ્રકાર",
+      topCategory: "ટોચ ભોજન",
       latestReport: "નવી રિપોર્ટ",
       latestActivity: "નવી ચકાસાયેલ પ્રવૃત્તિ",
       open: "ખુલ્લી",
       stats: {
         totalApproved: ["ચકાસાયેલ સમસ્યાઓ", "એડમિન સમીક્ષા પછી જાહેર રિપોર્ટ.", "પાઇલટ હમણાં શરૂ થયો છે."],
         pending: ["સમીક્ષા બાકી", "પ્રકાશન પહેલાં મોડરેશન જરૂરી.", "પ્રકાશન પહેલાં મોડરેશન જરૂરી."],
-        resolved: ["ઉકેલાયેલી સમસ્યાઓ", "જાહેર પ્રગતિ સંકેત.", "જાહેર પ્રગતિ સંકેત."],
+        rejected: ["નકારાયેલ લિસ્ટિંગ", "સમીક્ષા પછી નામંજૂર.", "સમીક્ષા પછી નામંજૂર."],
         reportsThisWeek: ["આ અઠવાડિયાના રિપોર્ટ", "તાજેતરની નાગરિક પ્રવૃત્તિ.", "તાજેતરની નાગરિક પ્રવૃત્તિ."],
       },
     },
@@ -868,14 +847,15 @@ export const copy = {
 
 export type I18nCopy = typeof copy.en;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getCopy(_locale: Locale): I18nCopy {
   return copy.en;
 }
 
-export function issueLabel(locale: Locale, issueType: IssueType) {
-  return getCopy(locale).issueTypes[issueType]?.[0] ?? getCopy(locale).issueTypes.other[0];
+export function categoryLabel(locale: Locale, category: FoodCategory) {
+  return getCopy(locale).categories[category]?.[0] ?? getCopy(locale).categories.other[0];
 }
 
-export function issueDescription(locale: Locale, issueType: IssueType) {
-  return getCopy(locale).issueTypes[issueType]?.[1] ?? getCopy(locale).issueTypes.other[1];
+export function categoryDescription(locale: Locale, category: FoodCategory) {
+  return getCopy(locale).categories[category]?.[1] ?? getCopy(locale).categories.other[1];
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { MapPinned, Trophy, Camera, ShieldCheck } from "lucide-react";
+import { MapPinned, Camera, ShieldCheck } from "lucide-react";
 import { getCopy, type Locale } from "@/lib/i18n";
 
 export function Footer({ locale }: { locale: Locale }) {
@@ -9,7 +9,6 @@ export function Footer({ locale }: { locale: Locale }) {
   const links = [
     { href: "/reports/new", label: t.common.submit, icon: Camera },
     { href: "/map", label: t.common.publicMap, icon: MapPinned },
-    { href: "/leaderboard", label: t.common.leaderboard, icon: Trophy },
     { href: "/admin", label: t.common.admin, icon: ShieldCheck },
   ];
 

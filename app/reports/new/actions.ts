@@ -12,7 +12,7 @@ import {
   MAX_UPLOAD_IMAGE_BYTES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
-import type { IssueType, ReportInsert } from "@/lib/supabase/types";
+import type { FoodCategory, ReportInsert } from "@/lib/supabase/types";
 import { reportCreateSchema } from "@/lib/validators/report";
 
 const SUBMISSION_COOLDOWN_SECONDS = 30;
@@ -68,7 +68,7 @@ export async function submitPublicReportAction(formData: FormData) {
   }
 
   const input = {
-    issue_type: safeString(formData.get("issue_type")) as IssueType,
+    category: safeString(formData.get("category")) as FoodCategory,
     title: safeString(formData.get("title")),
     description: safeString(formData.get("description")),
     menu_text: safeString(formData.get("menu_text")) || safeString(formData.get("description")),

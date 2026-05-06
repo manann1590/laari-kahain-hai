@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Home, MapPinned, Trophy, ShieldCheck, Camera, Building2 } from "lucide-react";
+import { Home, MapPinned, ShieldCheck, Camera } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getCopy, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -17,10 +17,8 @@ export function Header({ locale }: { locale: Locale }) {
     { href: "/", label: t.common.home, icon: Home },
     { href: "/reports/new", label: t.common.submit, icon: Camera },
     { href: "/map", label: t.common.publicMap, icon: MapPinned },
-    { href: "/leaderboard", label: t.common.leaderboard, icon: Trophy },
   ];
   const utilityNav = [
-    { href: "/amc", label: t.common.amc, icon: Building2 },
     { href: "/admin", label: t.common.admin, icon: ShieldCheck },
   ];
 
@@ -103,7 +101,7 @@ export function Header({ locale }: { locale: Locale }) {
         className="fixed inset-x-0 bottom-0 z-40 border-t border-civic-line bg-white/96 px-2 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] pt-2 shadow-[0_-4px_20px_rgba(43,27,18,0.10)] backdrop-blur-lg md:hidden"
         aria-label="Mobile primary"
       >
-        <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+        <div className="mx-auto grid max-w-md grid-cols-3 gap-1">
           {nav.map((item) => (
             <Link
               key={item.href}

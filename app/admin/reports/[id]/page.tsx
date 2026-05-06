@@ -2,17 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Check, Copy, RotateCw, X, ArrowRight, AlertTriangle } from "lucide-react";
+import { Copy, X, ArrowRight } from "lucide-react";
 import { requireAdmin } from "@/lib/data/admin";
 import { getAdminReportById, getReportEvents, getNearbyReports } from "@/lib/data/reports";
 import {
   markDuplicateAction,
   rejectReportAction,
-  resolveAsClaimedAction,
-  markInProgressAction,
   updateReportAction,
 } from "@/app/admin/actions";
-import { ISSUE_TYPES, STATUS_LABELS } from "@/lib/constants";
+import { FOOD_CATEGORIES, STATUS_LABELS } from "@/lib/constants";
 import { distanceMeters } from "@/lib/geo";
 import { formatDateTime } from "@/lib/utils";
 import { PageShell } from "@/components/layout/PageShell";
@@ -23,7 +21,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { AdminReportForm } from "@/components/admin/AdminReportForm";
 import { SafetyChecklist } from "@/components/admin/SafetyChecklist";
 import { ReportStatusBadge } from "@/components/reports/ReportStatusBadge";
-import { IssueTypeBadge } from "@/components/reports/IssueTypeBadge";
+import { CategoryBadge } from "@/components/reports/CategoryBadge";
 import { PublicMapLoader } from "@/components/map/PublicMapLoader";
 
 export const metadata: Metadata = {
@@ -46,7 +44,7 @@ export default async function AdminReportDetailPage({
   const nearbyReports = await getNearbyReports(
     report.latitude,
     report.longitude,
-    report.issue_type,
+    report.category,
     report.id,
     150,
   ).catch(() => []);
@@ -94,7 +92,7 @@ export default async function AdminReportDetailPage({
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-civic-ink">
                 <Image
                   src={report.image_url}
-                  alt={ISSUE_TYPES[report.issue_type].label}
+                  alt={FOOD_CATEGORIES[report.category].label}
                   fill
                   sizes="(max-width: 1280px) 100vw, 45vw"
                   className="object-cover"
@@ -139,7 +137,7 @@ export default async function AdminReportDetailPage({
                           </p>
                         ) : null}
                         <p className="mt-0.5 text-civic-amber">
-                          {ISSUE_TYPES[nearby.issue_type]?.label ?? nearby.issue_type}
+                          {FOOD_CATEGORIES[nearby.category]?.label ?? nearby.category}
                         </p>
                         <p className="mt-0.5 text-xs text-civic-muted">
                           {STATUS_LABELS[nearby.status]?.label ?? nearby.status} &middot; {dist}m away
@@ -171,51 +169,6 @@ export default async function AdminReportDetailPage({
                   </p>
                 </div>
               ) : null}
-
-              {/* Mark In Progress */}
-              {(
-                report.status === "verified" ||
-                report.status === "approved" ||
-                report.status === "sent_to_amc" ||
-                report.status === "amc_acknowledged"
-              ) ? (
-                <form action={markInProgressAction.bind(null, report.id)}>
-                  <Button type="submit" variant="outline" className="w-full">
-                    <RotateCw className="h-4 w-4" aria-hidden="true" />
-                    Mark in progress
-                  </Button>
-                </form>
-              ) : null}
-
-              {/* Mark closed, requires note */}
-              <div className="rounded-lg border border-civic-line p-3">
-                <div className="mb-2 flex items-center gap-2 text-sm font-black text-white">
-                  <AlertTriangle className="h-4 w-4 text-civic-amber" aria-hidden="true" />
-                  Mark closed
-                </div>
-                <p className="mb-3 text-xs text-civic-muted">
-                  Admin cannot silently close a listing — a note is required.
-                </p>
-                <form action={resolveAsClaimedAction.bind(null, report.id)} className="space-y-2">
-                  <Textarea
-                    label="Resolution note"
-                    name="resolution_note"
-                    required
-                    placeholder="Describe why this vendor is closed or inactive..."
-                    className="min-h-24"
-                  />
-                  <Input
-                    label="Proof image (optional)"
-                    name="proof_image_file"
-                    type="file"
-                    accept="image/jpeg,image/png,image/gif,image/webp"
-                  />
-                  <Button type="submit" variant="outline" className="w-full">
-                    <Check className="h-4 w-4" aria-hidden="true" />
-                    Mark closed (claimed)
-                  </Button>
-                </form>
-              </div>
 
               {/* Reject */}
               <form action={rejectReportAction.bind(null, report.id)} className="space-y-2">
@@ -282,7 +235,7 @@ export default async function AdminReportDetailPage({
         <div className="space-y-6">
           <Card variant="elevated">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <IssueTypeBadge issueType={report.issue_type} />
+              <CategoryBadge category={report.category} />
               <ReportStatusBadge status={report.status} />
               {report.tracking_id ? (
                 <span className="rounded-md bg-civic-soft px-2 py-0.5 font-mono text-xs font-black text-civic-green">

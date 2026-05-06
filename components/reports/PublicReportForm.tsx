@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useFormStatus } from "react-dom";
 import {
   CakeSlice,
-  Camera,
   CheckCircle2,
   Coffee,
   CookingPot,
@@ -24,7 +23,7 @@ import {
   Utensils,
   X,
 } from "lucide-react";
-import { getCopy, issueDescription, issueLabel, type Locale } from "@/lib/i18n";
+import { getCopy, categoryDescription, categoryLabel, type Locale } from "@/lib/i18n";
 import { compressFormImage } from "@/lib/client/image-compression";
 import { getCurrentCoordinates } from "@/lib/client/geolocation";
 import { googleMapsLink, isValidLatLng } from "@/lib/geo";
@@ -33,7 +32,7 @@ import {
   ACCEPTED_UPLOAD_IMAGE_TYPES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
-import type { IssueType } from "@/lib/supabase/types";
+import type { FoodCategory } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -42,7 +41,7 @@ import { Card } from "@/components/ui/Card";
 const DRAFT_KEY = "lari_local_vendor_draft";
 
 type DraftData = {
-  issue_type?: IssueType;
+  category?: FoodCategory;
   title?: string;
   description?: string;
   vendor_phone?: string;
@@ -99,29 +98,29 @@ function SubmitButton({ isPreparing, locale }: { isPreparing: boolean; locale: L
 }
 
 const issueOptions = [
-  "pothole",
-  "broken_streetlight",
-  "garbage",
-  "waterlogging",
-  "damaged_road",
-  "damaged_footpath",
-  "open_manhole",
-  "damaged_public_property",
-  "drainage",
-  "illegal_dumping",
+  "chaat_snacks",
+  "tea_coffee",
+  "meals_thali",
+  "fast_food",
+  "south_indian",
+  "desserts",
+  "juice_shakes",
+  "street_chinese",
+  "breakfast",
+  "late_night",
 ] as const;
 
-const issueIcons: Record<IssueType, typeof MapPin> = {
-  pothole: Sandwich,
-  broken_streetlight: Coffee,
-  garbage: Utensils,
-  waterlogging: Pizza,
-  damaged_road: Soup,
-  damaged_footpath: Dessert,
-  open_manhole: CupSoda,
-  damaged_public_property: CookingPot,
-  drainage: CakeSlice,
-  illegal_dumping: Moon,
+const issueIcons: Record<FoodCategory, typeof MapPin> = {
+  chaat_snacks: Sandwich,
+  tea_coffee: Coffee,
+  meals_thali: Utensils,
+  fast_food: Pizza,
+  south_indian: Soup,
+  desserts: Dessert,
+  juice_shakes: CupSoda,
+  street_chinese: CookingPot,
+  breakfast: CakeSlice,
+  late_night: Moon,
   other: Store,
 };
 
@@ -133,7 +132,7 @@ export function PublicReportForm({
   locale: Locale;
 }) {
   const t = getCopy(locale);
-  const [selectedIssue, setSelectedIssue] = useState<IssueType>("pothole");
+  const [selectedIssue, setSelectedIssue] = useState<FoodCategory>("chaat_snacks");
   const [vendorName, setVendorName] = useState("");
   const [vendorPhone, setVendorPhone] = useState("");
   const [vendorWhatsapp, setVendorWhatsapp] = useState("");
@@ -166,7 +165,7 @@ export function PublicReportForm({
   useEffect(() => {
     const draft = loadDraft();
     if (draft) {
-      if (draft.issue_type) setSelectedIssue(draft.issue_type);
+      if (draft.category) setSelectedIssue(draft.category);
       if (draft.title) setVendorName(draft.title);
       if (draft.description) setDescription(draft.description);
       if (draft.vendor_phone) setVendorPhone(draft.vendor_phone);
@@ -186,7 +185,7 @@ export function PublicReportForm({
   useEffect(() => {
     if (!draftRestored && !selectedIssue && !description && !area && !latitude && !longitude) return;
     saveDraft({
-      issue_type: selectedIssue,
+      category: selectedIssue,
       title: vendorName,
       description,
       vendor_phone: vendorPhone,
@@ -295,7 +294,7 @@ export function PublicReportForm({
         className="hidden"
         aria-hidden="true"
       />
-      <input type="hidden" name="issue_type" value={selectedIssue} />
+      <input type="hidden" name="category" value={selectedIssue} />
 
       <Card title="1. Vendor details" description="Tell people who you are, what to call you, and when to show up." className="p-4 sm:p-5">
         <div className="grid gap-4 md:grid-cols-2">
@@ -359,20 +358,20 @@ export function PublicReportForm({
                 key={issueType}
                 type="button"
                 onClick={() => setSelectedIssue(issueType)}
-                className={`flex min-h-20 items-center gap-3 rounded-lg border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-civic-teal/30 ${
+                className={`flex min-h-20 items-center gap-3 rounded-lg border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-civic-orange/20 ${
                   selected
-                    ? "border-civic-green bg-civic-green text-civic-ink shadow-soft"
-                    : "border-civic-line bg-civic-soft/80 text-white hover:border-civic-teal/50 hover:bg-[#151f33]"
+                    ? "border-civic-orange bg-civic-orange/10 text-civic-text shadow-soft ring-1 ring-civic-orange/30"
+                    : "border-civic-line bg-white text-civic-text hover:border-civic-orange/40 hover:bg-civic-bg"
                 }`}
                 aria-pressed={selected}
               >
-                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-civic-ink text-civic-green" : "bg-civic-ink text-civic-teal"}`}>
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-civic-orange text-white" : "bg-civic-orange/10 text-civic-orange"}`}>
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <span>
-                  <span className="block font-bold">{issueLabel(locale, issueType)}</span>
-                  <span className={`mt-1 block text-xs leading-5 ${selected ? "text-civic-ink/70" : "text-civic-muted"}`}>
-                    {issueDescription(locale, issueType)}
+                  <span className="block font-bold">{categoryLabel(locale, issueType)}</span>
+                  <span className={`mt-1 block text-xs leading-5 text-civic-muted`}>
+                    {categoryDescription(locale, issueType)}
                   </span>
                 </span>
               </button>
@@ -384,7 +383,7 @@ export function PublicReportForm({
       <Card title={t.reportForm.photoTitle} description={t.reportForm.photoDescription} className="p-4 sm:p-5">
         <div className="grid gap-4 md:grid-cols-[1fr_0.9fr]">
           <label className="block space-y-1.5">
-            <span className="text-sm font-bold text-white">{t.reportForm.photoOptional}</span>
+            <span className="text-sm font-bold text-civic-text">{t.reportForm.photoOptional}</span>
             <input
               ref={fileInputRef}
               id="image_file"
@@ -394,14 +393,14 @@ export function PublicReportForm({
               capture="environment"
               required
               onChange={onPhotoChange}
-              className="min-h-11 w-full rounded-lg border border-civic-line bg-[#090f1c] px-3 py-2 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-civic-teal focus:ring-2 focus:ring-civic-teal/20 file:mr-3 file:rounded-md file:border-0 file:bg-civic-green file:px-3 file:py-1.5 file:text-sm file:font-black file:text-civic-ink sm:text-sm"
+              className="min-h-11 w-full rounded-lg border border-civic-line bg-white px-3 py-2 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 file:mr-3 file:rounded-md file:border-0 file:bg-civic-orange file:px-3 file:py-1.5 file:text-sm file:font-black file:text-white sm:text-sm"
             />
             <p className="text-xs text-civic-muted">
               {t.reportForm.uploadHelp.replace("{max}", MAX_UPLOAD_IMAGE_LABEL)}
             </p>
             {imageError ? <p className="text-xs text-red-700">{imageError}</p> : null}
           </label>
-          <div className="relative overflow-hidden rounded-lg border border-dashed border-civic-line bg-civic-ink">
+          <div className="relative overflow-hidden rounded-lg border border-dashed border-civic-line bg-civic-bg">
             {previewUrl ? (
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -418,7 +417,7 @@ export function PublicReportForm({
             ) : (
               <div className="flex h-52 flex-col items-center justify-center p-5 text-center">
                 <ImageOff className="h-8 w-8 text-civic-muted" aria-hidden="true" />
-                <p className="mt-3 text-sm font-black text-white">{t.reportForm.noPhoto}</p>
+                <p className="mt-3 text-sm font-black text-civic-text">{t.reportForm.noPhoto}</p>
                 <p className="mt-1 text-xs leading-5 text-civic-muted">{t.reportForm.noPhotoCopy}</p>
               </div>
             )}
@@ -450,7 +449,7 @@ export function PublicReportForm({
         {/* Google Maps link / coordinates parser */}
         <div className="mt-4">
           <label className="block space-y-1.5">
-            <span className="text-sm font-bold text-white">{t.reportForm.pasteMaps}</span>
+            <span className="text-sm font-bold text-civic-text">{t.reportForm.pasteMaps}</span>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -460,14 +459,14 @@ export function PublicReportForm({
                   setMapsLinkMessage(null);
                 }}
                 placeholder={t.reportForm.mapsPlaceholder}
-                className="h-11 flex-1 rounded-lg border border-civic-line bg-[#090f1c] px-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-civic-teal focus:ring-2 focus:ring-civic-teal/20 sm:text-sm"
+                className="h-11 flex-1 rounded-lg border border-civic-line bg-white px-3 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 sm:text-sm"
               />
               <Button type="button" variant="secondary" onClick={parseMapsLink} className="shrink-0">
                 {t.reportForm.parse}
               </Button>
             </div>
             {mapsLinkMessage ? (
-              <p className={`text-xs ${mapsLinkMessage.type === "success" ? "text-civic-green" : "text-red-700"}`}>
+              <p className={`text-xs ${mapsLinkMessage.type === "success" ? "text-civic-leaf" : "text-red-700"}`}>
                 {mapsLinkMessage.text}
               </p>
             ) : null}
@@ -500,8 +499,8 @@ export function PublicReportForm({
         ) : null}
         {locationError ? <p className="mt-3 text-sm leading-6 text-red-700">{locationError}</p> : null}
 
-        <div className="mt-5 rounded-lg border border-civic-line bg-civic-ink p-4">
-          <p className="text-sm font-black text-white">{t.reportForm.locationDetails}</p>
+        <div className="mt-5 rounded-lg border border-civic-line bg-civic-bg p-4">
+          <p className="text-sm font-black text-civic-text">{t.reportForm.locationDetails}</p>
           <div className="mt-3 grid gap-4 md:grid-cols-2">
             <Input
               label={t.common.area}
@@ -533,7 +532,7 @@ export function PublicReportForm({
           onChange={(e) => setDescription(e.target.value)}
         />
 
-        <div className="mt-4 rounded-lg border border-civic-teal/25 bg-civic-teal/10 p-4 text-sm leading-6 text-white">
+        <div className="mt-4 rounded-lg border border-civic-orange/25 bg-civic-orange/8 p-4 text-sm leading-6 text-civic-text">
           <div className="flex gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
             <p>
@@ -550,7 +549,7 @@ export function PublicReportForm({
         </div>
       </Card>
 
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-civic-ink/95 p-3 shadow-[0_-10px_30px_rgba(0,0,0,0.28)] backdrop-blur sm:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(43,27,18,0.12)] backdrop-blur sm:hidden">
         <SubmitButton isPreparing={isPreparingImage} locale={locale} />
       </div>
     </form>

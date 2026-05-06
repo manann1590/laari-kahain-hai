@@ -6,13 +6,10 @@ import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import { requireAdmin, clearAdminCookie } from "@/lib/data/admin";
 import {
   approveReport,
-  citizenVerifyResolved,
   createReport,
   markDuplicate,
   rejectReport,
-  resolveAsClaimedReport,
   updateReport,
-  updateStatus,
 } from "@/lib/data/reports";
 import { safeNumber, safeString } from "@/lib/utils";
 import {
@@ -21,7 +18,7 @@ import {
   MAX_UPLOAD_IMAGE_BYTES,
   MAX_UPLOAD_IMAGE_LABEL,
 } from "@/lib/image-upload";
-import type { IssueType, Severity, ReportInsert, ReportStatus } from "@/lib/supabase/types";
+import type { FoodCategory, Severity, ReportInsert, ReportStatus } from "@/lib/supabase/types";
 
 async function uploadImage(formData: FormData, fieldName = "image_file", storagePath = "manual") {
   const file = formData.get(fieldName);
@@ -38,49 +35,23 @@ async function uploadImage(formData: FormData, fieldName = "image_file", storage
 
   const path = `${storagePath}/${crypto.randomUUID()}.${imageFormat.extension}`;
   const supabase = createAdminSupabaseClient();
-  const { error } = await supabase.storage.from("report-images").upload(path, file, {
+  const { error } = await supabase.storage.from("vendor-images").upload(path, file, {
     contentType: imageFormat.mimeType,
     upsert: false,
   });
 
   if (error) throw new Error(`Image upload failed: ${error.message}`);
 
-  const { data } = supabase.storage.from("report-images").getPublicUrl(path);
+  const { data } = supabase.storage.from("vendor-images").getPublicUrl(path);
   return {
     image_path: path,
     image_url: data.publicUrl,
   };
 }
 
-async function uploadProofImage(formData: FormData, fieldName = "proof_image_file"): Promise<string | undefined> {
-  const file = formData.get(fieldName);
-  if (!(file instanceof File) || file.size === 0) return undefined;
-
-  if (file.size > MAX_UPLOAD_IMAGE_BYTES) {
-    throw new Error(`Proof image must be ${MAX_UPLOAD_IMAGE_LABEL} or smaller.`);
-  }
-
-  const imageFormat = await detectUploadImageFile(file);
-  if (!imageFormat) {
-    throw new Error(`Only ${ACCEPTED_UPLOAD_IMAGE_LABEL} image uploads are supported.`);
-  }
-
-  const path = `proof-images/${crypto.randomUUID()}.${imageFormat.extension}`;
-  const supabase = createAdminSupabaseClient();
-  const { error } = await supabase.storage.from("report-images").upload(path, file, {
-    contentType: imageFormat.mimeType,
-    upsert: false,
-  });
-
-  if (error) throw new Error(`Proof image upload failed: ${error.message}`);
-
-  const { data } = supabase.storage.from("report-images").getPublicUrl(path);
-  return data.publicUrl;
-}
-
 function reportInputFromForm(formData: FormData) {
   return {
-    issue_type: safeString(formData.get("issue_type")) as IssueType,
+    category: safeString(formData.get("category")) as FoodCategory,
     title: safeString(formData.get("title")),
     description: safeString(formData.get("description")),
     menu_text: safeString(formData.get("menu_text")) || safeString(formData.get("description")),
@@ -141,38 +112,6 @@ export async function rejectReportAction(id: string, formData: FormData) {
   await rejectReport(id, safeString(formData.get("rejection_note")));
   revalidatePath("/admin");
   revalidatePath("/map");
-}
-
-export async function resolveAsClaimedAction(id: string, formData: FormData) {
-  await requireAdmin();
-  const note = safeString(formData.get("resolution_note"));
-  if (!note) throw new Error("A resolution note is required.");
-  const proofImageUrl = await uploadProofImage(formData, "proof_image_file");
-  await resolveAsClaimedReport(id, note, proofImageUrl);
-  revalidatePath("/admin");
-  revalidatePath("/map");
-  revalidatePath(`/reports/${id}`);
-}
-
-/** @deprecated Use resolveAsClaimedAction instead */
-export async function resolveReportAction(id: string, formData: FormData) {
-  return resolveAsClaimedAction(id, formData);
-}
-
-export async function markInProgressAction(id: string) {
-  await requireAdmin();
-  await updateStatus(id, "in_progress", "Listing marked as in progress.");
-  revalidatePath("/admin");
-  revalidatePath("/map");
-  revalidatePath(`/reports/${id}`);
-}
-
-export async function adminConfirmResolvedAction(id: string) {
-  await requireAdmin();
-  await citizenVerifyResolved(id);
-  revalidatePath("/admin");
-  revalidatePath("/map");
-  revalidatePath(`/reports/${id}`);
 }
 
 export async function markDuplicateAction(id: string, formData: FormData) {

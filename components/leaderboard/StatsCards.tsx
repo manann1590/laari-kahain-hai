@@ -6,7 +6,7 @@ import { StatCard } from "@/components/ui/StatCard";
 const cards = [
   { key: "totalApproved", label: "Verified Vendors", icon: CheckCircle2, tone: "green", helper: "Public listings after admin review." },
   { key: "pending", label: "Pending Review", icon: Clock3, tone: "amber", helper: "Needs moderation before publishing." },
-  { key: "resolved", label: "Closed Listings", icon: AlertCircle, tone: "blue", helper: "Visible public listing status." },
+  { key: "rejected", label: "Rejected", icon: AlertCircle, tone: "blue", helper: "Listings rejected during review." },
   { key: "reportsThisWeek", label: "New This Week", icon: TrendingUp, tone: "orange", helper: "Recent food-map activity." },
 ] as const;
 

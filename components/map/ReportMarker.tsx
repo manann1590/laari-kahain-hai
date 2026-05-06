@@ -3,15 +3,15 @@
 import L from "leaflet";
 import { Marker, Popup } from "react-leaflet";
 import Link from "next/link";
-import { ISSUE_TYPES } from "@/lib/constants";
-import { getCopy, issueLabel, type Locale } from "@/lib/i18n";
+import { FOOD_CATEGORIES } from "@/lib/constants";
+import { getCopy, categoryLabel, type Locale } from "@/lib/i18n";
 import type { PublicReport } from "@/lib/supabase/types";
 import { formatDate, titleFromLocation } from "@/lib/utils";
 import { ReportStatusBadge } from "@/components/reports/ReportStatusBadge";
 
 export function ReportMarker({ report, locale = "en" }: { report: PublicReport; locale?: Locale }) {
   const t = getCopy(locale);
-  const issue = ISSUE_TYPES[report.issue_type] || ISSUE_TYPES.other;
+  const issue = FOOD_CATEGORIES[report.category] || FOOD_CATEGORIES.other;
   const icon = L.divIcon({
     className: "",
     html: `<div class="pp-marker" style="width:18px;height:18px;background:${issue.marker}"></div>`,
@@ -27,12 +27,12 @@ export function ReportMarker({ report, locale = "en" }: { report: PublicReport; 
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={report.image_url}
-              alt={issueLabel(locale, report.issue_type)}
+              alt={categoryLabel(locale, report.category)}
               className="h-24 w-full rounded object-cover"
             />
           ) : null}
           <div>
-            <p className="font-black text-white">{report.title || issueLabel(locale, report.issue_type)}</p>
+            <p className="font-black text-white">{report.title || categoryLabel(locale, report.category)}</p>
             <p className="text-xs text-civic-muted">{titleFromLocation(report.area, report.district)}</p>
           </div>
           <p className="line-clamp-2 text-xs text-civic-muted">{report.menu_text || report.description}</p>

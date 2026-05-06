@@ -1,29 +1,22 @@
-export type IssueType =
-  | "pothole"
-  | "broken_streetlight"
-  | "garbage"
-  | "waterlogging"
-  | "damaged_road"
-  | "damaged_footpath"
-  | "open_manhole"
-  | "damaged_public_property"
-  | "drainage"
-  | "illegal_dumping"
+export type FoodCategory =
+  | "chaat_snacks"
+  | "tea_coffee"
+  | "meals_thali"
+  | "fast_food"
+  | "south_indian"
+  | "desserts"
+  | "juice_shakes"
+  | "street_chinese"
+  | "breakfast"
+  | "late_night"
   | "other";
 
 export type ReportStatus =
   | "pending"
-  | "approved"                  // backwards-compat alias for verified
-  | "verified"                  // admin approved, publicly visible
+  | "approved"   // backwards-compat alias for verified
+  | "verified"   // admin approved, publicly visible
   | "rejected"
-  | "duplicate"
-  | "in_progress"
-  | "sent_to_amc"
-  | "amc_acknowledged"
-  | "resolved_claimed"          // admin claims resolved; awaits verification
-  | "citizen_verified_resolved" // citizen confirmed resolved
-  | "reopened"
-  | "resolved";                 // backwards-compat alias for resolved_claimed
+  | "duplicate";
 
 export type VerificationLevel = "high" | "medium" | "low";
 
@@ -32,7 +25,7 @@ export type Severity = "low" | "medium" | "high" | "critical";
 export type Report = {
   id: string;
   tracking_id: string | null;
-  issue_type: IssueType;
+  category: FoodCategory;
   title: string | null;
   description: string | null;
   latitude: number;
@@ -64,19 +57,14 @@ export type Report = {
   created_at: string;
   updated_at: string;
   approved_at: string | null;
-  resolved_at: string | null;
   rejected_at: string | null;
-  resolved_claimed_at: string | null;
-  citizen_verified_at: string | null;
-  reopened_at: string | null;
-  sent_to_amc_at: string | null;
 };
 
 export type PublicReport = Pick<
   Report,
   | "id"
   | "tracking_id"
-  | "issue_type"
+  | "category"
   | "title"
   | "description"
   | "latitude"
@@ -104,15 +92,10 @@ export type PublicReport = Pick<
   | "created_at"
   | "updated_at"
   | "approved_at"
-  | "resolved_at"
-  | "resolved_claimed_at"
-  | "citizen_verified_at"
-  | "reopened_at"
-  | "sent_to_amc_at"
 >;
 
 export type ReportInsert = Partial<Omit<Report, "id" | "created_at" | "updated_at">> & {
-  issue_type: IssueType;
+  category: FoodCategory;
   latitude: number;
   longitude: number;
 };
@@ -121,7 +104,7 @@ export type ReportUpdate = Partial<Omit<Report, "id" | "created_at" | "updated_a
 
 export type ReportEvent = {
   id: string;
-  report_id: string;
+  vendor_id: string;
   event_type: string;
   old_status: ReportStatus | null;
   new_status: ReportStatus | null;
@@ -131,54 +114,19 @@ export type ReportEvent = {
   created_at: string;
 };
 
-export type LeaderboardRow = {
-  rank: number;
-  area: string;
-  district: string;
-  open_count: number;
-  resolved_count: number;
-  top_issue_type: IssueType;
-};
-
 export type DashboardStats = {
   totalApproved: number;
   pending: number;
-  resolved: number;
   rejected: number;
   reportsThisWeek: number;
-  topIssueType: IssueType | null;
+  topCategory: FoodCategory | null;
   topDistrictArea: string | null;
 };
 
 export type ReportFilters = {
-  issue_type?: IssueType | "all";
+  category?: FoodCategory | "all";
   status?: ReportStatus | "all";
   district?: string;
   area?: string;
   search?: string;
-};
-
-export type AmcEmailBatch = {
-  id: string;
-  week_start: string;
-  week_end: string;
-  subject: string | null;
-  body: string | null;
-  report_count: number;
-  sent_to: string | null;
-  cc: string | null;
-  status: "draft" | "sent" | "failed";
-  sent_at: string | null;
-  created_at: string;
-};
-
-export type AmcEmailBatchReport = {
-  id: string;
-  batch_id: string;
-  report_id: string;
-  created_at: string;
-};
-
-export type AmcBatchWithReports = AmcEmailBatch & {
-  reports: PublicReport[];
 };
