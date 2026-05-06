@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: #FDF8F2;
+  color: #2D2A26;
+  font-family:
+    "Space Grotesk", "Sora", "Avenir Next", Avenir, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ── Map ─────────────────────────────────────────────── */
+.leaflet-container {
+  z-index: 0;
+}
+
+.pp-marker {
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.30);
+}
+
+/* ── Hero gradient ───────────────────────────────────── */
+.hero-gradient {
+  background: linear-gradient(135deg, #F97316 0%, #F7B500 55%, #FFD166 100%);
+}
+
+/* ── Card / surface ──────────────────────────────────── */
+.warm-surface {
+  background: #FFFDF8;
+  border: 1px solid #E7D7C9;
+}
+
+/* ── Subtle dot grid (on hero) ───────────────────────── */
+.civic-grid {
+  background-image:
+    radial-gradient(circle, rgba(43, 27, 18, 0.12) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── Stripe pattern ──────────────────────────────────── */
+.street-stripes {
+  background-image:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.35) 25%, transparent 25%),
+    linear-gradient(315deg, rgba(214, 40, 40, 0.22) 25%, transparent 25%);
+  background-position: 0 0, 12px 0;
+  background-size: 24px 24px;
+}
+
+/* ── Paper / menu panel ──────────────────────────────── */
+.menu-paper {
+  background-image:
+    linear-gradient(rgba(247, 181, 0, 0.14) 31px, rgba(247, 181, 0, 0.26) 32px),
+    linear-gradient(90deg, rgba(249, 115, 22, 0.10) 0 1px, transparent 1px);
+  background-color: #FFFDF8;
+  background-size: 100% 32px, 44px 100%;
+}
+
+/* ── Market panel (cards with warm tint) ─────────────── */
+.market-panel {
+  background:
+    linear-gradient(135deg, rgba(249, 115, 22, 0.08), transparent 45%),
+    linear-gradient(315deg, rgba(247, 181, 0, 0.06), transparent 50%),
+    #FFFDF8;
+}
+
+/* ── Ticket / accent stripe ──────────────────────────── */
+.ticket-edge {
+  background-image: linear-gradient(
+    90deg,
+    #F97316  0      20%,
+    #F7B500  20%    40%,
+    #22C55E  40%    60%,
+    #D62828  60%    80%,
+    #F97316  80%   100%
+  );
+}
+
+/* ── Glow helpers ────────────────────────────────────── */
+.lari-glow {
+  box-shadow: 0 0 36px rgba(249, 115, 22, 0.22), 0 0 72px rgba(249, 115, 22, 0.10);
+}
+
+.gold-glow {
+  box-shadow: 0 0 32px rgba(247, 181, 0, 0.24), 0 0 60px rgba(247, 181, 0, 0.10);
+}
+
+/* ── Selection ───────────────────────────────────────── */
+::selection {
+  background: #F7B500;
+  color: #2B1B12;
+}
+
+/* ── Leaflet ─────────────────────────────────────────── */
+.leaflet-control-attribution {
+  font-size: 10px;
+}
+
+/* ── Indic language font scaling ─────────────────────── */
+html:lang(hi) :where(p, span, label, input, textarea, select, button, a, li, td, th).text-xs,
+html:lang(gu) :where(p, span, label, input, textarea, select, button, a, li, td, th).text-xs {
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+html:lang(hi) :where(p, span, label, input, textarea, select, button, a, li, td, th).text-sm,
+html:lang(gu) :where(p, span, label, input, textarea, select, button, a, li, td, th).text-sm {
+  font-size: 1rem;
+  line-height: 1.625rem;
+}
+
+html:lang(hi) :where(p, span, label, input, textarea, select, button, a, li, td, th).text-base,
+html:lang(gu) :where(p, span, label, input, textarea, select, button, a, li, td, th).text-base {
+  font-size: 1.0625rem;
+  line-height: 1.75rem;
+}
+
+html:lang(hi) :where(p, label, input, textarea, select, button, a, li, td, th).text-lg,
+html:lang(gu) :where(p, label, input, textarea, select, button, a, li, td, th).text-lg {
+  font-size: 1.1875rem;
+  line-height: 2rem;
+}

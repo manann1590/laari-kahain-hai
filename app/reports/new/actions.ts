@@ -1,0 +1,114 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { createPublicReport } from "@/lib/data/reports";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
+import { safeNumber, safeString } from "@/lib/utils";
+import {
+  ACCEPTED_UPLOAD_IMAGE_LABEL,
+  detectUploadImageFile,
+  MAX_UPLOAD_IMAGE_BYTES,
+  MAX_UPLOAD_IMAGE_LABEL,
+} from "@/lib/image-upload";
+import type { IssueType, ReportInsert } from "@/lib/supabase/types";
+import { reportCreateSchema } from "@/lib/validators/report";
+
+const SUBMISSION_COOLDOWN_SECONDS = 30;
+const PUBLIC_SUBMISSION_COOKIE = "lari_local_last_vendor_submission";
+
+async function uploadPublicImage(formData: FormData): Promise<{
+  image_path?: string;
+  image_url?: string;
+  hasImage: boolean;
+}> {
+  const file = formData.get("image_file");
+
+  if (!(file instanceof File) || file.size === 0) {
+    return { hasImage: false };
+  }
+
+  if (file.size > MAX_UPLOAD_IMAGE_BYTES) {
+    throw new Error(`Image must be ${MAX_UPLOAD_IMAGE_LABEL} or smaller.`);
+  }
+
+  const imageFormat = await detectUploadImageFile(file);
+  if (!imageFormat) {
+    throw new Error(`Only ${ACCEPTED_UPLOAD_IMAGE_LABEL} image uploads are supported.`);
+  }
+
+  const path = `public-submissions/${crypto.randomUUID()}.${imageFormat.extension}`;
+  const supabase = createAdminSupabaseClient();
+  const { error } = await supabase.storage.from("report-images").upload(path, file, {
+    contentType: imageFormat.mimeType,
+    upsert: false,
+  });
+
+  if (error) throw new Error(`Image upload failed: ${error.message}`);
+
+  const { data } = supabase.storage.from("report-images").getPublicUrl(path);
+  return {
+    image_path: path,
+    image_url: data.publicUrl,
+    hasImage: true,
+  };
+}
+
+export async function submitPublicReportAction(formData: FormData) {
+  if (safeString(formData.get("website"))) {
+    throw new Error("Submission rejected.");
+  }
+
+  const cookieStore = await cookies();
+  const lastSubmission = Number(cookieStore.get(PUBLIC_SUBMISSION_COOKIE)?.value || 0);
+  const now = Date.now();
+  if (lastSubmission && now - lastSubmission < SUBMISSION_COOLDOWN_SECONDS * 1000) {
+    throw new Error("Please wait a moment before submitting another vendor listing.");
+  }
+
+  const input = {
+    issue_type: safeString(formData.get("issue_type")) as IssueType,
+    title: safeString(formData.get("title")),
+    description: safeString(formData.get("description")),
+    menu_text: safeString(formData.get("menu_text")) || safeString(formData.get("description")),
+    vendor_phone: safeString(formData.get("vendor_phone")),
+    vendor_whatsapp: safeString(formData.get("vendor_whatsapp")) || safeString(formData.get("vendor_phone")),
+    cuisine_tags: safeString(formData.get("cuisine_tags")),
+    price_range: safeString(formData.get("price_range")),
+    hours_text: safeString(formData.get("hours_text")),
+    latitude: safeNumber(formData.get("latitude")),
+    longitude: safeNumber(formData.get("longitude")),
+    address_text: safeString(formData.get("address_text")),
+    area: safeString(formData.get("area")),
+    district: safeString(formData.get("district")),
+    city: safeString(formData.get("city")),
+    severity: "medium",
+  } as ReportInsert;
+
+  reportCreateSchema.parse(input);
+
+  const { hasImage, ...uploaded } = await uploadPublicImage(formData);
+  if (!hasImage) {
+    throw new Error("Please add a fresh camera photo of your lari, menu, or food.");
+  }
+
+  const report = await createPublicReport({
+    ...input,
+    ...uploaded,
+    stall_photo_url: uploaded.image_url,
+    stall_photo_path: uploaded.image_path,
+    verification_level: hasImage ? "medium" : "low",
+  } as ReportInsert);
+
+  cookieStore.set(PUBLIC_SUBMISSION_COOKIE, String(now), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: SUBMISSION_COOLDOWN_SECONDS,
+    path: "/",
+  });
+
+  revalidatePath("/admin");
+  redirect(`/reports/new?submitted=1&id=${report.id}`);
+}
