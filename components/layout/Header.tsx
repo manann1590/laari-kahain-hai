@@ -3,19 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MapPinned, ShieldCheck, Camera } from "lucide-react";
+import { Home, MapPinned, ShieldCheck, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getCopy, type Locale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-export function Header({ locale }: { locale: Locale }) {
+export function Header({ locale, isAdmin = false }: { locale: Locale; isAdmin?: boolean }) {
   const pathname = usePathname();
   const t = getCopy(locale);
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   const nav = [
     { href: "/", label: t.common.home, icon: Home },
-    { href: "/partner", label: t.common.submit, icon: Camera },
+    { href: "/partner", label: t.common.submit, icon: PlusCircle },
     { href: "/map", label: t.common.publicMap, icon: MapPinned },
   ];
   const utilityNav = [
@@ -69,21 +69,25 @@ export function Header({ locale }: { locale: Locale }) {
               </Link>
             ))}
 
-            <span className="mx-1.5 h-4 w-px bg-civic-line" aria-hidden="true" />
+            {isAdmin && (
+              <>
+                <span className="mx-1.5 h-4 w-px bg-civic-line" aria-hidden="true" />
 
-            {utilityNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "inline-flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-civic-muted/70 transition-all duration-150 hover:bg-civic-bg hover:text-civic-text focus:outline-none focus:ring-2 focus:ring-civic-line",
-                  isActive(item.href) && "bg-civic-bg text-civic-text",
-                )}
-              >
-                <item.icon className="h-4 w-4" aria-hidden="true" />
-                {item.label}
-              </Link>
-            ))}
+                {utilityNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "inline-flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-civic-muted/70 transition-all duration-150 hover:bg-civic-bg hover:text-civic-text focus:outline-none focus:ring-2 focus:ring-civic-line",
+                      isActive(item.href) && "bg-civic-bg text-civic-text",
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" aria-hidden="true" />
+                    {item.label}
+                  </Link>
+                ))}
+              </>
+            )}
           </nav>
 
           {/* CTA */}
