@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import { ExternalLink, Filter, Info, ListFilter, MapPinned, Phone, ShieldCheck } from "lucide-react";
-import { FOOD_CATEGORIES } from "@/lib/constants";
+import { Filter, Info, ListFilter, MapPinned, ShieldCheck } from "lucide-react";
+import { FOOD_CATEGORIES, FOOD_CATEGORY_VALUES } from "@/lib/constants";
 import { getRequestLocale } from "@/lib/i18n-server";
 import { getCopy, categoryLabel } from "@/lib/i18n";
 import type { FoodCategory } from "@/lib/supabase/types";
 import { getPublicReports } from "@/lib/data/reports";
 import { normalizeFoodCategory } from "@/lib/validators/report";
-import { formatDate, titleFromLocation } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/layout/PageShell";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
@@ -15,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PublicMapLoader } from "@/components/map/PublicMapLoader";
 import { Card } from "@/components/ui/Card";
+import { VendorListView } from "@/components/map/VendorListView";
 
 export const metadata: Metadata = {
   title: "Food Map",
@@ -44,12 +44,6 @@ export default async function MapPage({
     });
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Could not load vendor listings.";
-  }
-
-  function telHref(phone?: string | null) {
-    if (!phone) return "";
-    const normalized = phone.replace(/[^\d+]/g, "");
-    return normalized ? `tel:${normalized}` : "";
   }
 
   return (
@@ -105,6 +99,37 @@ export default async function MapPage({
           </aside>
 
           <div className="space-y-5">
+            {/* Quick-filter chips — visible on mobile/tablet only (xl has the sidebar with category select) */}
+            <div className="xl:hidden">
+              <div className="flex flex-wrap gap-2">
+                <a
+                  href="/map"
+                  className={cn(
+                    "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                    !category
+                      ? "border-civic-orange bg-civic-orange text-white"
+                      : "border-civic-line bg-white text-civic-muted hover:border-civic-orange/50 hover:text-civic-text",
+                  )}
+                >
+                  All
+                </a>
+                {FOOD_CATEGORY_VALUES.map((cat) => (
+                  <a
+                    key={cat}
+                    href={`/map?category=${cat}`}
+                    className={cn(
+                      "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+                      category === cat
+                        ? "border-civic-orange bg-civic-orange text-white"
+                        : "border-civic-line bg-white text-civic-muted hover:border-civic-orange/50 hover:text-civic-text",
+                    )}
+                  >
+                    {categoryLabel(locale, cat)}
+                  </a>
+                ))}
+              </div>
+            </div>
+
             <Card variant="elevated" className="p-3">
               <PublicMapLoader reports={reports} locale={locale} />
             </Card>
@@ -117,112 +142,7 @@ export default async function MapPage({
                 action={<Button href="/reports/new">{t.map.submitFirst}</Button>}
               />
             ) : (
-              <Card title={t.map.listView} description={t.map.listCopy} className="p-0">
-                <div className="grid gap-4 p-4 md:hidden">
-                  {reports.map((report) => (
-                    <article key={report.id} className="rounded-lg border border-civic-line bg-civic-soft/85 p-3 shadow-sm">
-                      <div className="flex gap-3">
-                        {report.image_url ? (
-                          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-civic-ink">
-                            <Image
-                              src={report.image_url}
-                              alt={categoryLabel(locale, report.category)}
-                              fill
-                              sizes="96px"
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg bg-civic-ink">
-                            <MapPinned className="h-6 w-6 text-civic-muted" aria-hidden="true" />
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={FOOD_CATEGORIES[report.category].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
-                              {categoryLabel(locale, report.category)}
-                            </span>
-                          </div>
-                          <h2 className="mt-2 truncate font-black text-white">
-                            {report.title || titleFromLocation(report.area, report.district)}
-                          </h2>
-                          <p className="mt-1 text-sm text-civic-muted">{titleFromLocation(report.area, report.district)}</p>
-                          <p className="mt-1 line-clamp-2 text-sm leading-5 text-civic-muted">{report.menu_text || report.description || t.map.verifiedReportFallback}</p>
-                          <div className="mt-3 flex items-center justify-between gap-3">
-                            <span className="text-xs text-civic-muted">{report.price_range || formatDate(report.created_at)}</span>
-                            <Button href={`/reports/${report.id}`} size="sm">
-                              {t.map.openReport}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                <div className="hidden overflow-x-auto md:block">
-                  <table className="min-w-full divide-y divide-civic-line text-sm">
-                    <thead className="bg-civic-ink text-left text-xs uppercase tracking-normal text-civic-muted">
-                      <tr>
-                        <th className="px-4 py-3">Vendor</th>
-                        <th className="px-4 py-3">Cuisine</th>
-                        <th className="px-4 py-3">Location</th>
-                        <th className="px-4 py-3">Menu preview</th>
-                        <th className="px-4 py-3">Hours</th>
-                        <th className="px-4 py-3">Contact</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-civic-line">
-                      {reports.map((report) => (
-                        <tr key={report.id} className="align-top hover:bg-white/5">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              {report.image_url ? (
-                                <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-civic-ink">
-                                  <Image
-                                    src={report.image_url}
-                                    alt={categoryLabel(locale, report.category)}
-                                    fill
-                                    sizes="64px"
-                                    className="object-cover"
-                                  />
-                                </div>
-                              ) : null}
-                              <div>
-                                <p className="font-black text-white">{report.title || "Unnamed spot"}</p>
-                                <p className="text-xs text-civic-muted">{report.price_range || "Price not added"}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={FOOD_CATEGORIES[report.category].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
-                              {categoryLabel(locale, report.category)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-civic-muted">{titleFromLocation(report.area, report.district)}</td>
-                          <td className="max-w-xs px-4 py-3 text-civic-muted">
-                            <p className="line-clamp-2">{report.menu_text || report.description || t.map.verifiedReportFallback}</p>
-                          </td>
-                          <td className="px-4 py-3 text-civic-muted">{report.hours_text || "Ask vendor"}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-wrap gap-2">
-                              {report.vendor_phone ? (
-                                <Button href={telHref(report.vendor_phone)} size="sm" variant="secondary">
-                                  <Phone className="h-4 w-4" aria-hidden="true" />
-                                  Call
-                                </Button>
-                              ) : null}
-                              <Button href={`/reports/${report.id}`} size="sm">
-                                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                                View
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
+              <VendorListView reports={reports} locale={locale} />
             )}
 
             {reports.length === 0 ? (
