@@ -22,6 +22,32 @@ export type VerificationLevel = "high" | "medium" | "low";
 
 export type Severity = "low" | "medium" | "high" | "critical";
 
+export type PartnerStatus = "pending" | "approved" | "active" | "rejected";
+
+export type PartnerAccount = {
+  id: string;
+  business_name: string;
+  owner_name: string | null;
+  mobile_encrypted: string | null;
+  mobile_hash: string;
+  whatsapp_encrypted: string | null;
+  password_hash: string | null;
+  password_salt: string | null;
+  status: PartnerStatus;
+  onboarding_token_hash: string | null;
+  area: string | null;
+  district: string | null;
+  address_text: string | null;
+  city: string | null;
+  admin_notes: string | null;
+  rejection_note: string | null;
+  approved_at: string | null;
+  activated_at: string | null;
+  rejected_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Report = {
   id: string;
   tracking_id: string | null;
@@ -55,6 +81,7 @@ export type Report = {
   reporter_phone_hash: string | null;
   admin_notes: string | null;
   duplicate_of: string | null;
+  partner_id: string | null;
   confirmation_count: number | null;
   created_at: string;
   updated_at: string;
@@ -92,6 +119,7 @@ export type PublicReport = Pick<
   | "status"
   | "severity"
   | "verification_level"
+  | "partner_id"
   | "confirmation_count"
   | "created_at"
   | "updated_at"

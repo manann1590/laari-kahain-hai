@@ -22,7 +22,7 @@ export function ReportMarker({ report, locale = "en" }: { report: PublicReport; 
   return (
     <Marker position={[report.latitude, report.longitude]} icon={icon}>
       <Popup minWidth={220}>
-        <div className="space-y-2 rounded-md bg-civic-ink p-2">
+        <div className="space-y-2 rounded-md bg-white p-2">
           {report.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -32,7 +32,7 @@ export function ReportMarker({ report, locale = "en" }: { report: PublicReport; 
             />
           ) : null}
           <div>
-            <p className="font-black text-white">{report.title || categoryLabel(locale, report.category)}</p>
+            <p className="font-black text-civic-text">{report.title || categoryLabel(locale, report.category)}</p>
             <p className="text-xs text-civic-muted">{titleFromLocation(report.area, report.district)}</p>
           </div>
           <p className="line-clamp-2 text-xs text-civic-muted">{report.menu_text || report.description}</p>
@@ -40,7 +40,7 @@ export function ReportMarker({ report, locale = "en" }: { report: PublicReport; 
             <ReportStatusBadge status={report.status} locale={locale} />
             <span className="text-xs text-civic-muted">{report.price_range || formatDate(report.created_at)}</span>
           </div>
-          <Link href={`/reports/${report.id}`} className="text-sm font-semibold text-civic-teal">
+          <Link href={`/reports/${report.id}`} className="text-sm font-semibold text-civic-orange">
             {t.common.details}
           </Link>
         </div>

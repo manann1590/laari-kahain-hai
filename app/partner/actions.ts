@@ -2,10 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-import { createPublicReport } from "@/lib/data/reports";
-import { createAdminSupabaseClient } from "@/lib/supabase/server";
-import { safeNumber, safeString } from "@/lib/utils";
 import {
   ACCEPTED_UPLOAD_IMAGE_LABEL,
   detectUploadImageFile,
@@ -18,22 +14,28 @@ import {
   MAX_MENU_FILE_BYTES,
   MAX_MENU_FILE_LABEL,
 } from "@/lib/menu-upload";
+import {
+  activatePartner,
+  clearPartnerCookie,
+  createPartnerRequest,
+  getSafePartnerRedirectPath,
+  requirePartner,
+  setPartnerCookie,
+  verifyPartnerLogin,
+} from "@/lib/data/partners";
+import { createPartnerReport } from "@/lib/data/reports";
+import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type { FoodCategory, ReportInsert } from "@/lib/supabase/types";
 import { reportCreateSchema } from "@/lib/validators/report";
+import { safeNumber, safeString } from "@/lib/utils";
 
-const SUBMISSION_COOLDOWN_SECONDS = 30;
-const PUBLIC_SUBMISSION_COOKIE = "foodradar_last_vendor_submission";
-
-async function uploadPublicImage(formData: FormData): Promise<{
+async function uploadImage(formData: FormData): Promise<{
   image_path?: string;
   image_url?: string;
   hasImage: boolean;
 }> {
   const file = formData.get("image_file");
-
-  if (!(file instanceof File) || file.size === 0) {
-    return { hasImage: false };
-  }
+  if (!(file instanceof File) || file.size === 0) return { hasImage: false };
 
   if (file.size > MAX_UPLOAD_IMAGE_BYTES) {
     throw new Error(`Image must be ${MAX_UPLOAD_IMAGE_LABEL} or smaller.`);
@@ -44,7 +46,7 @@ async function uploadPublicImage(formData: FormData): Promise<{
     throw new Error(`Only ${ACCEPTED_UPLOAD_IMAGE_LABEL} image uploads are supported.`);
   }
 
-  const path = `public-submissions/${crypto.randomUUID()}.${imageFormat.extension}`;
+  const path = `partner-submissions/${crypto.randomUUID()}.${imageFormat.extension}`;
   const supabase = createAdminSupabaseClient();
   const { error } = await supabase.storage.from("vendor-images").upload(path, file, {
     contentType: imageFormat.mimeType,
@@ -61,7 +63,7 @@ async function uploadPublicImage(formData: FormData): Promise<{
   };
 }
 
-async function uploadPublicMenuFile(formData: FormData): Promise<{
+async function uploadMenuFile(formData: FormData): Promise<{
   menu_image_path?: string;
   menu_image_url?: string;
 }> {
@@ -77,7 +79,7 @@ async function uploadPublicMenuFile(formData: FormData): Promise<{
     throw new Error(`Only ${ACCEPTED_MENU_LABEL} are accepted for the menu.`);
   }
 
-  const path = `menus/public/${crypto.randomUUID()}.${format.extension}`;
+  const path = `menus/partner/${crypto.randomUUID()}.${format.extension}`;
   const supabase = createAdminSupabaseClient();
   const { error } = await supabase.storage.from("vendor-images").upload(path, file, {
     contentType: format.mimeType,
@@ -93,18 +95,65 @@ async function uploadPublicMenuFile(formData: FormData): Promise<{
   };
 }
 
-export async function submitPublicReportAction(formData: FormData) {
-  throw new Error("FoodRadar listings can only be submitted from an approved partner account.");
+export async function requestPartnerAction(formData: FormData) {
+  await createPartnerRequest({
+    businessName: safeString(formData.get("business_name")) || "",
+    ownerName: safeString(formData.get("owner_name")),
+    mobile: safeString(formData.get("mobile")) || "",
+    whatsapp: safeString(formData.get("whatsapp")),
+    area: safeString(formData.get("area")),
+    district: safeString(formData.get("district")),
+    addressText: safeString(formData.get("address_text")),
+  });
+
+  redirect("/partner?requested=1");
+}
+
+export async function setupPartnerAction(formData: FormData) {
+  const password = safeString(formData.get("password")) || "";
+  const confirmPassword = safeString(formData.get("confirm_password")) || "";
+  if (password !== confirmPassword) throw new Error("Passwords do not match.");
+
+  await activatePartner({
+    token: safeString(formData.get("token")) || "",
+    mobile: safeString(formData.get("mobile")) || "",
+    password,
+    area: safeString(formData.get("area")),
+    district: safeString(formData.get("district")),
+    addressText: safeString(formData.get("address_text")),
+  });
+
+  redirect("/partner/dashboard?setup=1");
+}
+
+export async function loginPartnerAction(formData: FormData) {
+  const next = getSafePartnerRedirectPath(safeString(formData.get("next")));
+  const partner = await verifyPartnerLogin(
+    safeString(formData.get("mobile")) || "",
+    safeString(formData.get("password")) || "",
+  );
+
+  if (!partner) {
+    const loginUrl = new URL("/partner/login", "https://foodradar.local");
+    loginUrl.searchParams.set("error", "invalid");
+    loginUrl.searchParams.set("next", next);
+    redirect(`${loginUrl.pathname}${loginUrl.search}`);
+  }
+
+  await setPartnerCookie(partner.id);
+  redirect(next);
+}
+
+export async function logoutPartnerAction() {
+  await clearPartnerCookie();
+  redirect("/partner/login");
+}
+
+export async function createPartnerListingAction(formData: FormData) {
+  const partner = await requirePartner();
 
   if (safeString(formData.get("website"))) {
     throw new Error("Submission rejected.");
-  }
-
-  const cookieStore = await cookies();
-  const lastSubmission = Number(cookieStore.get(PUBLIC_SUBMISSION_COOKIE)?.value || 0);
-  const now = Date.now();
-  if (lastSubmission && now - lastSubmission < SUBMISSION_COOLDOWN_SECONDS * 1000) {
-    throw new Error("Please wait a moment before submitting another vendor listing.");
   }
 
   const input = {
@@ -124,18 +173,18 @@ export async function submitPublicReportAction(formData: FormData) {
     district: safeString(formData.get("district")),
     city: safeString(formData.get("city")),
     severity: "medium",
+    partner_id: partner.id,
   } as ReportInsert;
 
   reportCreateSchema.parse(input);
 
-  const { hasImage, ...uploaded } = await uploadPublicImage(formData);
+  const { hasImage, ...uploaded } = await uploadImage(formData);
   if (!hasImage) {
     throw new Error("Please add a fresh camera photo of your food spot, menu, or stall.");
   }
 
-  const menuUploaded = await uploadPublicMenuFile(formData);
-
-  const report = await createPublicReport({
+  const menuUploaded = await uploadMenuFile(formData);
+  await createPartnerReport({
     ...input,
     ...uploaded,
     ...menuUploaded,
@@ -144,14 +193,7 @@ export async function submitPublicReportAction(formData: FormData) {
     verification_level: "medium",
   } as ReportInsert);
 
-  cookieStore.set(PUBLIC_SUBMISSION_COOKIE, String(now), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: SUBMISSION_COOLDOWN_SECONDS,
-    path: "/",
-  });
-
   revalidatePath("/admin");
-  redirect(`/reports/new?submitted=1&id=${report.id}`);
+  revalidatePath("/partner/dashboard");
+  redirect("/partner/dashboard?submitted=1");
 }

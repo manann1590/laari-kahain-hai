@@ -305,7 +305,7 @@ export function PublicReportForm({
   }
 
   return (
-    <form action={submitWithCompressedImage} className="space-y-6">
+    <form action={submitWithCompressedImage} className="space-y-6 pb-28 sm:pb-0">
       <input
         type="text"
         name="website"
@@ -316,10 +316,10 @@ export function PublicReportForm({
       />
       <input type="hidden" name="category" value={selectedIssue} />
 
-      <Card title="1. Vendor details" description="Tell people who you are, what to call you, and when to show up." className="p-4 sm:p-5">
+      <Card title="1. Vendor details" description="Get discovered by nearby customers after review." className="p-4 sm:p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <Input
-            label="Food spot / stall name · Required"
+            label="Food spot / stall name - Required"
             name="title"
             required
             placeholder="Raju Bhai Cheese Vada Pav"
@@ -327,7 +327,7 @@ export function PublicReportForm({
             onChange={(event) => setVendorName(event.target.value)}
           />
           <Input
-            label="Public phone number · Required"
+            label="Public phone number - Required"
             name="vendor_phone"
             required
             type="tel"
@@ -343,6 +343,7 @@ export function PublicReportForm({
             placeholder="Leave blank to use same number"
             value={vendorWhatsapp}
             onChange={(event) => setVendorWhatsapp(event.target.value)}
+            helperText="Leave blank and FoodRadar will use the public phone number for WhatsApp."
           />
           <Input
             label="Open hours"
@@ -354,7 +355,7 @@ export function PublicReportForm({
           <Input
             label="Price range"
             name="price_range"
-            placeholder="₹50-₹180"
+            placeholder="Rs 50 - Rs 180"
             value={priceRange}
             onChange={(event) => setPriceRange(event.target.value)}
           />
@@ -368,7 +369,7 @@ export function PublicReportForm({
         </div>
       </Card>
 
-      <Card title={t.reportForm.chooseTitle} description={t.reportForm.chooseDescription} className="p-4 sm:p-5">
+      <Card title="2. Food, category, and menu" description="Help customers decide quickly before they call or visit." className="p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {issueOptions.map((issueType) => {
             const Icon = issueIcons[issueType];
@@ -378,7 +379,7 @@ export function PublicReportForm({
                 key={issueType}
                 type="button"
                 onClick={() => setSelectedIssue(issueType)}
-                className={`flex min-h-20 items-center gap-3 rounded-lg border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-civic-orange/20 ${
+                className={`flex min-h-20 min-w-0 items-center gap-3 rounded-lg border p-3 text-left transition focus:outline-none focus:ring-2 focus:ring-civic-orange/20 ${
                   selected
                     ? "border-civic-orange bg-civic-orange/10 text-civic-text shadow-soft ring-1 ring-civic-orange/30"
                     : "border-civic-line bg-white text-civic-text hover:border-civic-orange/40 hover:bg-civic-bg"
@@ -388,9 +389,9 @@ export function PublicReportForm({
                 <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${selected ? "bg-civic-orange text-white" : "bg-civic-orange/10 text-civic-orange"}`}>
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <span>
-                  <span className="block font-bold">{categoryLabel(locale, issueType)}</span>
-                  <span className={`mt-1 block text-xs leading-5 text-civic-muted`}>
+                <span className="min-w-0">
+                  <span className="block font-bold leading-tight">{categoryLabel(locale, issueType)}</span>
+                  <span className="mt-1 block text-xs leading-5 text-civic-muted">
                     {categoryDescription(locale, issueType)}
                   </span>
                 </span>
@@ -398,55 +399,61 @@ export function PublicReportForm({
             );
           })}
         </div>
-      </Card>
 
-      <Card title={t.reportForm.photoTitle} description={t.reportForm.photoDescription} className="p-4 sm:p-5">
-        <div className="grid gap-4 md:grid-cols-[1fr_0.9fr]">
-          <label className="block space-y-1.5">
-            <span className="text-sm font-bold text-civic-text">{t.reportForm.photoOptional}</span>
-            <input
-              ref={fileInputRef}
-              id="image_file"
-              name="image_file"
-              type="file"
-              accept={ACCEPTED_UPLOAD_IMAGE_TYPES}
-              capture="environment"
-              required
-              onChange={onPhotoChange}
-              className="min-h-11 w-full rounded-lg border border-civic-line bg-white px-3 py-2 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 file:mr-3 file:rounded-md file:border-0 file:bg-civic-orange file:px-3 file:py-1.5 file:text-sm file:font-black file:text-white sm:text-sm"
-            />
-            <p className="text-xs text-civic-muted">
-              {t.reportForm.uploadHelp.replace("{max}", MAX_UPLOAD_IMAGE_LABEL)}
-            </p>
-            {imageError ? <p className="text-xs text-red-700">{imageError}</p> : null}
+        <div className="mt-5">
+          <label className="block text-sm font-semibold text-civic-text">
+            Menu file <span className="font-normal text-civic-muted">(optional JPG, PNG, WebP or PDF - max {MAX_MENU_FILE_LABEL})</span>
           </label>
-          <div className="relative overflow-hidden rounded-lg border border-dashed border-civic-line bg-civic-bg">
-            {previewUrl ? (
-              <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={previewUrl} alt={t.reportForm.selectedPreviewAlt} className="h-52 w-full object-cover" />
+          <input
+            ref={menuFileRef}
+            type="file"
+            name="menu_file"
+            accept={ACCEPTED_MENU_TYPES}
+            onChange={onMenuFileChange}
+            className="hidden"
+          />
+          <div className="mt-2">
+            {menuFileName ? (
+              <div className="flex min-w-0 items-center gap-3 rounded-lg border border-civic-leaf/40 bg-civic-leaf/10 px-3 py-2.5">
+                <FileText className="h-4 w-4 shrink-0 text-civic-leaf" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate text-sm text-civic-text">{menuFileName}</span>
                 <button
                   type="button"
-                  onClick={clearPhoto}
-                  aria-label={t.reportForm.removePhoto}
-                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 focus:outline-none focus:ring-2 focus:ring-white"
+                  onClick={clearMenuFile}
+                  className="shrink-0 text-civic-muted hover:text-civic-text"
+                  aria-label="Remove menu file"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
-              </>
-            ) : (
-              <div className="flex h-52 flex-col items-center justify-center p-5 text-center">
-                <ImageOff className="h-8 w-8 text-civic-muted" aria-hidden="true" />
-                <p className="mt-3 text-sm font-black text-civic-text">{t.reportForm.noPhoto}</p>
-                <p className="mt-1 text-xs leading-5 text-civic-muted">{t.reportForm.noPhotoCopy}</p>
               </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => menuFileRef.current?.click()}
+                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-civic-line bg-white px-4 py-5 text-sm font-semibold text-civic-muted transition-colors hover:border-civic-orange/50 hover:text-civic-orange"
+              >
+                <Upload className="h-5 w-5" aria-hidden="true" />
+                Upload menu photo or PDF
+              </button>
             )}
           </div>
+          <p className="mt-1.5 text-xs text-civic-muted">
+            Menu upload is optional. A photo of your physical menu, PDF, or screenshot works well.
+          </p>
         </div>
-        {fileName ? <p className="mt-3 text-xs text-civic-muted">{t.reportForm.selected}: {fileName}</p> : null}
+
+        <Textarea
+          label="Menu highlights and notes"
+          name="description"
+          placeholder={t.reportForm.descriptionPlaceholder}
+          helperText="Add best sellers, prices, payment methods, or anything customers should know."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className="mt-4"
+        />
       </Card>
 
-      <Card title={t.reportForm.pinTitle} description={t.reportForm.pinDescription} className="p-4 sm:p-5">
+      <Card title="3. Location" description="Capture where the vendor is standing today or paste a Google Maps link." className="p-4 sm:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Button
             type="button"
@@ -470,7 +477,7 @@ export function PublicReportForm({
         <div className="mt-4">
           <label className="block space-y-1.5">
             <span className="text-sm font-bold text-civic-text">{t.reportForm.pasteMaps}</span>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={mapsLinkInput}
@@ -479,14 +486,14 @@ export function PublicReportForm({
                   setMapsLinkMessage(null);
                 }}
                 placeholder={t.reportForm.mapsPlaceholder}
-                className="h-11 flex-1 rounded-lg border border-civic-line bg-white px-3 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 sm:text-sm"
+                className="h-11 min-w-0 flex-1 rounded-lg border border-civic-line bg-white px-3 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 sm:text-sm"
               />
               <Button type="button" variant="secondary" onClick={parseMapsLink} className="shrink-0">
                 {t.reportForm.parse}
               </Button>
             </div>
             {mapsLinkMessage ? (
-              <p className={`text-xs ${mapsLinkMessage.type === "success" ? "text-civic-leaf" : "text-red-700"}`}>
+              <p className={`text-xs ${mapsLinkMessage.type === "success" ? "text-civic-leaf" : "text-civic-red"}`}>
                 {mapsLinkMessage.text}
               </p>
             ) : null}
@@ -515,9 +522,9 @@ export function PublicReportForm({
         </div>
 
         {!validLocation && (latitude || longitude) ? (
-          <p className="mt-3 text-sm text-red-700">{t.reportForm.captureBeforeSubmit}</p>
+          <p className="mt-3 text-sm text-civic-red">{t.reportForm.captureBeforeSubmit}</p>
         ) : null}
-        {locationError ? <p className="mt-3 text-sm leading-6 text-red-700">{locationError}</p> : null}
+        {locationError ? <p className="mt-3 text-sm leading-6 text-civic-red">{locationError}</p> : null}
 
         <div className="mt-5 rounded-lg border border-civic-line bg-civic-bg p-4">
           <p className="text-sm font-black text-civic-text">{t.reportForm.locationDetails}</p>
@@ -541,62 +548,52 @@ export function PublicReportForm({
         </div>
       </Card>
 
-      <Card title="5. Menu photo / PDF" description="Upload your menu as an image or PDF so customers know what to expect." className="p-4 sm:p-5">
-        {/* Menu file upload */}
-        <div>
-          <label className="block text-sm font-semibold text-civic-text">
-            Menu file <span className="font-normal text-civic-muted">(JPG, PNG, WebP or PDF · max {MAX_MENU_FILE_LABEL})</span>
+      <Card title="4. Photo and submit" description="A fresh camera photo is required so customers can recognize the stall after review." className="p-4 sm:p-5">
+        <div className="grid gap-4 md:grid-cols-[1fr_0.9fr]">
+          <label className="block space-y-1.5">
+            <span className="text-sm font-bold text-civic-text">{t.reportForm.photoOptional}</span>
+            <input
+              ref={fileInputRef}
+              id="image_file"
+              name="image_file"
+              type="file"
+              accept={ACCEPTED_UPLOAD_IMAGE_TYPES}
+              capture="environment"
+              required
+              onChange={onPhotoChange}
+              className="min-h-11 w-full rounded-lg border border-civic-line bg-white px-3 py-2 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 file:mr-3 file:rounded-md file:border-0 file:bg-civic-orange file:px-3 file:py-1.5 file:text-sm file:font-black file:text-white sm:text-sm"
+            />
+            <p className="text-xs text-civic-muted">
+              {t.reportForm.uploadHelp.replace("{max}", MAX_UPLOAD_IMAGE_LABEL)}
+            </p>
+            {imageError ? <p className="text-xs text-civic-red">{imageError}</p> : null}
           </label>
-          <input
-            ref={menuFileRef}
-            type="file"
-            name="menu_file"
-            accept={ACCEPTED_MENU_TYPES}
-            onChange={onMenuFileChange}
-            className="hidden"
-          />
-          <div className="mt-2">
-            {menuFileName ? (
-              <div className="flex items-center gap-3 rounded-lg border border-civic-leaf/40 bg-civic-leaf/8 px-3 py-2.5">
-                <FileText className="h-4 w-4 shrink-0 text-civic-leaf" aria-hidden="true" />
-                <span className="min-w-0 flex-1 truncate text-sm text-civic-text">{menuFileName}</span>
+          <div className="relative overflow-hidden rounded-lg border border-dashed border-civic-line bg-civic-bg">
+            {previewUrl ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={previewUrl} alt={t.reportForm.selectedPreviewAlt} className="h-52 w-full object-cover" />
                 <button
                   type="button"
-                  onClick={clearMenuFile}
-                  className="shrink-0 text-civic-muted hover:text-civic-text"
-                  aria-label="Remove menu file"
+                  onClick={clearPhoto}
+                  aria-label={t.reportForm.removePhoto}
+                  className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-civic-brown/70 text-white hover:bg-civic-brown/90 focus:outline-none focus:ring-2 focus:ring-white"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
-              </div>
+              </>
             ) : (
-              <button
-                type="button"
-                onClick={() => menuFileRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-civic-line bg-white px-4 py-5 text-sm text-civic-muted transition-colors hover:border-civic-orange/50 hover:text-civic-orange"
-              >
-                <Upload className="h-5 w-5" aria-hidden="true" />
-                Click to upload menu photo or PDF
-              </button>
+              <div className="flex h-52 flex-col items-center justify-center p-5 text-center">
+                <ImageOff className="h-8 w-8 text-civic-muted" aria-hidden="true" />
+                <p className="mt-3 text-sm font-black text-civic-text">{t.reportForm.noPhoto}</p>
+                <p className="mt-1 text-xs leading-5 text-civic-muted">{t.reportForm.noPhotoCopy}</p>
+              </div>
             )}
           </div>
-          <p className="mt-1.5 text-xs text-civic-muted">
-            A photo of your physical menu works great. PDFs and screenshots are fine too.
-          </p>
         </div>
+        {fileName ? <p className="mt-3 text-xs text-civic-muted">{t.reportForm.selected}: {fileName}</p> : null}
 
-        {/* Optional extra notes */}
-        <Textarea
-          label="Extra notes · Optional"
-          name="description"
-          placeholder={t.reportForm.descriptionPlaceholder}
-          helperText="Today's specials, price range, payment methods, or anything customers should know."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="mt-4"
-        />
-
-        <div className="mt-4 rounded-lg border border-civic-orange/25 bg-civic-orange/8 p-4 text-sm leading-6 text-civic-text">
+        <div className="mt-4 rounded-lg border border-civic-orange/25 bg-civic-orange/10 p-4 text-sm leading-6 text-civic-text">
           <div className="flex gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
             <p>{t.reportForm.safetyCopy}</p>
@@ -611,7 +608,7 @@ export function PublicReportForm({
         </div>
       </Card>
 
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(43,27,18,0.12)] backdrop-blur sm:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur sm:hidden">
         <SubmitButton isPreparing={isPreparingImage} locale={locale} />
       </div>
     </form>

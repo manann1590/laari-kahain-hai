@@ -16,8 +16,8 @@ export function LoginForm({ next, error }: { next: string; error?: string }) {
           autoComplete="current-password"
           required
         />
-        {error ? <p className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</p> : null}
-        <p className="rounded-lg border border-civic-line bg-civic-ink p-3 text-xs leading-5 text-civic-muted">
+        {error ? <p className="rounded-md bg-violet-50 p-3 text-sm text-civic-red">{error}</p> : null}
+        <p className="rounded-lg border border-civic-line bg-civic-bg p-3 text-xs leading-5 text-civic-muted">
           Review vendor listings for food relevance, image safety, and valid location before publishing.
         </p>
         <Button type="submit" className="w-full">

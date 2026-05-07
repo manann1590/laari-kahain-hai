@@ -23,9 +23,9 @@ function ApproveButton({ allChecked }: { allChecked: boolean }) {
       type="submit"
       disabled={!allChecked || pending}
       className={cn(
-        "inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-black uppercase tracking-normal transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-civic-ink",
+        "inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white",
         allChecked && !pending
-          ? "bg-civic-green text-civic-ink shadow-sm hover:bg-[#d7ff76] focus:ring-civic-green"
+          ? "bg-civic-success text-white shadow-sm hover:bg-green-700 focus:ring-civic-success"
           : "cursor-not-allowed bg-civic-green/10 text-civic-green/45",
       )}
     >
@@ -62,8 +62,8 @@ export function SafetyChecklist({ reportId }: { reportId: string }) {
                 className={cn(
                   "flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition",
                   isChecked
-                    ? "border-civic-green/35 bg-civic-green/10 text-civic-green"
-                    : "border-civic-amber/35 bg-civic-amber/10 text-civic-amber hover:border-civic-amber",
+                    ? "border-green-200 bg-green-50 text-green-950"
+                    : "border-amber-200 bg-amber-50 text-amber-950 hover:border-civic-amber",
                 )}
               >
                 <span className="mt-0.5 shrink-0" aria-hidden="true">

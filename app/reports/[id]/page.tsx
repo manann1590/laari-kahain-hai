@@ -88,14 +88,20 @@ export default async function ReportDetailPage({
       actions={
         <>
           {vendorTel ? (
-            <Button href={vendorTel}>
+            <Button href={vendorTel} className="w-full sm:w-auto">
               <Phone className="h-4 w-4" aria-hidden="true" />
               Call vendor
             </Button>
           ) : null}
-          <Button href={googleMapsLink(report.latitude, report.longitude)} variant="secondary">
+          {vendorWhatsappUrl ? (
+            <Button href={vendorWhatsappUrl} variant="success" className="w-full sm:w-auto">
+              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              WhatsApp vendor
+            </Button>
+          ) : null}
+          <Button href={googleMapsLink(report.latitude, report.longitude)} variant="secondary" className="w-full sm:w-auto">
             <ExternalLink className="h-4 w-4" aria-hidden="true" />
-            {t.reportDetail.openLocation}
+            Get directions
           </Button>
         </>
       }
@@ -105,7 +111,7 @@ export default async function ReportDetailPage({
           <div className="flex flex-col items-start gap-4 sm:flex-row">
             <CheckCircle2 className="h-8 w-8 shrink-0 text-civic-teal" aria-hidden="true" />
             <div>
-              <h2 className="text-xl font-black text-white">{t.reportDetail.submittedSuccess}</h2>
+              <h2 className="text-xl font-black text-civic-text">{t.reportDetail.submittedSuccess}</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-civic-muted">
                 {t.reportDetail.submittedSuccessCopy}
               </p>
@@ -115,39 +121,47 @@ export default async function ReportDetailPage({
       ) : null}
 
       {report.tracking_id ? (
-        <div className="mb-6 flex items-center gap-3 rounded-lg border border-civic-line bg-civic-soft px-4 py-3">
+        <div className="mb-6 flex min-w-0 items-center gap-3 rounded-lg border border-civic-line bg-white px-4 py-3 shadow-sm">
           <ClipboardCopy className="h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-black uppercase tracking-normal text-civic-muted">{t.common.trackingId}</p>
-            <p className="mt-0.5 font-mono text-base font-black text-white">{report.tracking_id}</p>
+            <p className="mt-0.5 break-all font-mono text-base font-black text-civic-text">{report.tracking_id}</p>
           </div>
         </div>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="space-y-6">
+        <div className="order-2 space-y-6 lg:order-1">
           <Card variant="elevated">
             <div className="flex flex-wrap gap-2">
               <CategoryBadge category={report.category} locale={locale} />
               <ReportStatusBadge status={report.status} locale={locale} />
-              {report.price_range ? <Badge className="border-amber-200 bg-amber-100 text-amber-950">{report.price_range}</Badge> : null}
+              {report.price_range ? <Badge className="border-yellow-200 bg-yellow-100 text-civic-brown">{report.price_range}</Badge> : null}
             </div>
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border border-civic-line bg-civic-ink p-4">
+              <div className="rounded-lg border border-civic-line bg-civic-bg p-4">
                 <p className="text-xs font-black uppercase tracking-normal text-civic-muted">{t.common.area}</p>
-                <p className="mt-2 font-black text-white">{titleFromLocation(report.area, report.district)}</p>
+                <p className="mt-2 font-black text-civic-text">{titleFromLocation(report.area, report.district)}</p>
               </div>
-              <div className="rounded-lg border border-civic-line bg-civic-ink p-4">
+              <div className="rounded-lg border border-civic-line bg-civic-bg p-4">
                 <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Hours</p>
-                <p className="mt-2 font-black text-white">{report.hours_text || "Ask vendor"}</p>
+                <p className="mt-2 font-black text-civic-text">{report.hours_text || "Ask vendor"}</p>
               </div>
-              <div className="rounded-lg border border-civic-line bg-civic-ink p-4">
+              <div className="rounded-lg border border-civic-line bg-civic-bg p-4">
                 <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Phone</p>
-                <p className="mt-2 font-black text-white">{report.vendor_phone || "Not added"}</p>
+                <p className="mt-2 font-black text-civic-text">{report.vendor_phone || "Not added"}</p>
               </div>
-              <div className="rounded-lg border border-civic-line bg-civic-ink p-4">
+              <div className="rounded-lg border border-civic-line bg-civic-bg p-4">
                 <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Tags</p>
-                <p className="mt-2 font-black text-white">{report.cuisine_tags || categoryLabel(locale, report.category)}</p>
+                <p className="mt-2 font-black text-civic-text">{report.cuisine_tags || categoryLabel(locale, report.category)}</p>
+              </div>
+              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                <p className="text-xs font-black uppercase tracking-normal text-green-800">Trust</p>
+                <p className="mt-2 font-black text-green-950">Verified listing</p>
+              </div>
+              <div className="rounded-lg border border-civic-line bg-civic-bg p-4">
+                <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Last updated</p>
+                <p className="mt-2 font-black text-civic-text">{formatDateTime(report.updated_at)}</p>
               </div>
             </div>
           </Card>
@@ -159,7 +173,7 @@ export default async function ReportDetailPage({
                   href={report.menu_image_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 rounded-lg border border-civic-line bg-civic-ink px-4 py-3 text-sm font-semibold text-white hover:bg-white/5"
+                  className="flex items-center gap-2 rounded-lg border border-civic-line bg-white px-4 py-3 text-sm font-semibold text-civic-text hover:bg-civic-bg"
                 >
                   <ExternalLink className="h-4 w-4 shrink-0 text-civic-teal" aria-hidden="true" />
                   Open menu PDF
@@ -176,14 +190,14 @@ export default async function ReportDetailPage({
               )
             ) : null}
             {report.menu_text || report.description ? (
-              <p className={`whitespace-pre-line leading-8 text-white ${report.menu_image_url ? "mt-4" : ""}`}>
+              <p className={`whitespace-pre-line leading-8 text-civic-text ${report.menu_image_url ? "mt-4" : ""}`}>
                 {report.menu_text || report.description}
               </p>
             ) : !report.menu_image_url ? (
               <p className="text-civic-muted">{t.reportDetail.noDescription}</p>
             ) : null}
             {report.address_text ? (
-              <p className="mt-4 rounded-lg border border-civic-line bg-civic-ink p-4 text-sm leading-6 text-civic-muted">
+              <p className="mt-4 rounded-lg border border-civic-line bg-civic-bg p-4 text-sm leading-6 text-civic-muted">
                 {report.address_text}
               </p>
             ) : null}
@@ -215,7 +229,7 @@ export default async function ReportDetailPage({
               <li className="flex gap-3">
                 <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
                 <div>
-                  <p className="font-black text-white">{t.reportDetail.submitted}</p>
+                  <p className="font-black text-civic-text">{t.reportDetail.submitted}</p>
                   <p className="text-civic-muted">{formatDateTime(report.created_at)}</p>
                 </div>
               </li>
@@ -223,7 +237,7 @@ export default async function ReportDetailPage({
                 <li key={event.id} className="flex gap-3">
                   <Workflow className="mt-0.5 h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
                   <div className="min-w-0 flex-1">
-                    <p className="font-black capitalize text-white">
+                    <p className="font-black capitalize text-civic-text">
                       {event.event_type.replace(/_/g, " ")}
                     </p>
                     {event.note ? (
@@ -245,9 +259,9 @@ export default async function ReportDetailPage({
               ))}
               {report.approved_at ? (
                 <li className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" aria-hidden="true" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-civic-leaf" aria-hidden="true" />
                   <div>
-                    <p className="font-black text-white">{t.reportDetail.verified}</p>
+                    <p className="font-black text-civic-text">{t.reportDetail.verified}</p>
                     <p className="text-civic-muted">{formatDateTime(report.approved_at)}</p>
                   </div>
                 </li>
@@ -264,7 +278,7 @@ export default async function ReportDetailPage({
 
           <Card title={t.reportDetail.shareTitle}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <p className="min-w-0 flex-1 truncate rounded-md bg-civic-soft px-3 py-2 text-sm text-civic-muted">
+              <p className="min-w-0 flex-1 break-all rounded-md bg-civic-soft px-3 py-2 text-sm text-civic-muted">
                 {shareUrl}
               </p>
               <Button href={shareUrl} variant="secondary">
@@ -279,7 +293,7 @@ export default async function ReportDetailPage({
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="order-1 space-y-6 lg:order-2">
           {report.image_url ? (
             <Card className="p-3">
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-civic-ink">
@@ -303,6 +317,27 @@ export default async function ReportDetailPage({
           >
             <PublicMapLoader reports={[report]} heightClass="h-80 min-h-80" locale={locale} />
           </Card>
+        </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${vendorTel && vendorWhatsappUrl ? 3 : vendorTel || vendorWhatsappUrl ? 2 : 1}, minmax(0, 1fr))` }}>
+          {vendorTel ? (
+            <Button href={vendorTel} size="sm">
+              <Phone className="h-4 w-4" aria-hidden="true" />
+              Call
+            </Button>
+          ) : null}
+          {vendorWhatsappUrl ? (
+            <Button href={vendorWhatsappUrl} size="sm" variant="success">
+              <MessageCircle className="h-4 w-4" aria-hidden="true" />
+              WhatsApp
+            </Button>
+          ) : null}
+          <Button href={googleMapsLink(report.latitude, report.longitude)} size="sm" variant="secondary">
+            <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            Directions
+          </Button>
         </div>
       </div>
     </PageShell>

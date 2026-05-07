@@ -12,23 +12,23 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants = {
   primary:
-    "bg-civic-orange text-white shadow-[0_0_0_1px_rgba(249,115,22,0.30),0_4px_16px_rgba(249,115,22,0.28)] hover:bg-orange-500 focus:ring-civic-orange",
+    "border border-civic-orange bg-civic-orange text-white shadow-[0_8px_18px_rgba(15,118,110,0.18)] hover:bg-civic-hover focus:ring-civic-orange",
   secondary:
-    "border border-civic-line bg-white text-civic-text shadow-card hover:border-civic-orange/50 hover:bg-civic-bg focus:ring-civic-orange",
+    "border border-civic-line bg-white text-civic-text shadow-sm hover:border-civic-orange/50 hover:bg-civic-bg focus:ring-civic-orange",
   ghost:
-    "bg-transparent text-civic-text hover:bg-civic-orange/10 focus:ring-civic-orange",
+    "border border-transparent bg-transparent text-civic-text hover:bg-civic-orange/10 focus:ring-civic-orange",
   danger:
-    "bg-civic-red text-white shadow-card hover:bg-red-700 focus:ring-civic-red",
+    "border border-civic-red bg-civic-red text-white shadow-sm hover:bg-red-700 focus:ring-civic-red",
   success:
-    "bg-civic-success text-white shadow-card hover:bg-green-600 focus:ring-civic-success",
+    "border border-civic-success bg-civic-success text-white shadow-sm hover:bg-green-700 focus:ring-civic-success",
   outline:
-    "border border-civic-orange/60 bg-transparent text-civic-orange shadow-card hover:bg-civic-orange/10 focus:ring-civic-orange",
+    "border border-civic-orange/60 bg-white text-civic-orange shadow-sm hover:bg-civic-orange/10 focus:ring-civic-orange",
 };
 
 const sizes = {
   sm: "min-h-9 px-3 text-xs",
   md: "min-h-10 px-4 text-sm",
-  lg: "min-h-11 px-5 text-sm",
+  lg: "min-h-11 px-5 text-base",
 };
 
 export function Button({
@@ -43,7 +43,7 @@ export function Button({
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const classes = cn(
-    "inline-flex min-w-0 items-center justify-center gap-2 rounded-xl font-bold uppercase tracking-wide transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-civic-bg disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex min-w-0 max-w-full items-center justify-center gap-2 rounded-lg px-3 text-center font-bold leading-tight transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-civic-bg disabled:cursor-not-allowed disabled:opacity-50",
     variants[variant],
     sizes[size],
     className,

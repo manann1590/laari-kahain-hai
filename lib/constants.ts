@@ -33,26 +33,26 @@ export const FOOD_CATEGORIES: Record<
   chaat_snacks: {
     label: "Chaat & Snacks",
     description: "Pani puri, bhel, dabeli, vada pav, sandwiches, and quick bites",
-    marker: "#FF8A00",
-    badge: "bg-orange-100 text-orange-950 border-orange-200",
+    marker: "#7C3AED",
+    badge: "bg-violet-100 text-violet-950 border-violet-200",
   },
   tea_coffee: {
     label: "Tea & Coffee",
     description: "Chai, coffee, cocoa, coolers, and tiny hangout counters",
-    marker: "#8B5E34",
-    badge: "bg-amber-100 text-amber-950 border-amber-200",
+    marker: "#6366F1",
+    badge: "bg-indigo-100 text-indigo-950 border-indigo-200",
   },
   meals_thali: {
     label: "Meals & Thali",
     description: "Lunch plates, dinner boxes, paratha, khichdi, rice bowls, and full meals",
-    marker: "#1FA971",
-    badge: "bg-emerald-100 text-emerald-950 border-emerald-200",
+    marker: "#00B8D9",
+    badge: "bg-cyan-100 text-cyan-950 border-cyan-200",
   },
   fast_food: {
     label: "Fast Food",
     description: "Burgers, pizzas, fries, rolls, wraps, momos, and fusion plates",
-    marker: "#E3442E",
-    badge: "bg-red-100 text-red-950 border-red-200",
+    marker: "#8B5CF6",
+    badge: "bg-violet-100 text-violet-950 border-violet-200",
   },
   south_indian: {
     label: "South Indian",
@@ -63,14 +63,14 @@ export const FOOD_CATEGORIES: Record<
   desserts: {
     label: "Desserts",
     description: "Ice cream, kulfi, falooda, waffles, cakes, and sweet cravings",
-    marker: "#C44CCB",
-    badge: "bg-fuchsia-100 text-fuchsia-950 border-fuchsia-200",
+    marker: "#7C83FF",
+    badge: "bg-purple-100 text-purple-950 border-purple-200",
   },
   juice_shakes: {
     label: "Juice & Shakes",
     description: "Fresh juice, soda, lassi, shakes, smoothies, and summer rescue",
-    marker: "#008C8C",
-    badge: "bg-teal-100 text-teal-950 border-teal-200",
+    marker: "#0891B2",
+    badge: "bg-sky-100 text-sky-950 border-sky-200",
   },
   street_chinese: {
     label: "Street Chinese",
@@ -101,19 +101,19 @@ export const FOOD_CATEGORIES: Record<
 export const STATUS_LABELS: Record<ReportStatus, { label: string; badge: string }> = {
   pending: {
     label: "Pending Review",
-    badge: "bg-amber-50 text-amber-900 border-amber-200",
+    badge: "bg-amber-50 text-amber-950 border-amber-200",
   },
   approved: {
     label: "Verified",
-    badge: "bg-emerald-50 text-emerald-900 border-emerald-200",
+    badge: "bg-green-50 text-green-950 border-green-200",
   },
   verified: {
     label: "Verified",
-    badge: "bg-emerald-50 text-emerald-900 border-emerald-200",
+    badge: "bg-green-50 text-green-950 border-green-200",
   },
   rejected: {
     label: "Rejected",
-    badge: "bg-red-50 text-red-900 border-red-200",
+    badge: "bg-red-50 text-red-950 border-red-200",
   },
   duplicate: {
     label: "Duplicate",
@@ -124,8 +124,8 @@ export const STATUS_LABELS: Record<ReportStatus, { label: string; badge: string 
 export const SEVERITY_LABELS: Record<Severity, { label: string; badge: string }> = {
   low: { label: "Low", badge: "bg-slate-50 text-slate-800 border-slate-200" },
   medium: { label: "Medium", badge: "bg-blue-50 text-blue-900 border-blue-200" },
-  high: { label: "High", badge: "bg-orange-50 text-orange-900 border-orange-200" },
-  critical: { label: "Critical", badge: "bg-red-50 text-red-900 border-red-200" },
+  high: { label: "High", badge: "bg-violet-50 text-violet-950 border-violet-200" },
+  critical: { label: "Critical", badge: "bg-violet-50 text-violet-950 border-violet-200" },
 };
 
 export const AHMEDABAD_CENTER = {

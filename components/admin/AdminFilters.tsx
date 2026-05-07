@@ -13,7 +13,7 @@ export function AdminFilters({
   search?: string;
 }) {
   return (
-    <form className="grid gap-3 rounded-lg border border-civic-line bg-civic-soft/85 p-3 shadow-sm sm:p-4 md:grid-cols-[1fr_1fr_2fr_auto]">
+    <form className="grid min-w-0 gap-3 rounded-lg border border-civic-line bg-white p-3 shadow-sm sm:p-4 md:grid-cols-[1fr_1fr_2fr_auto]">
       <Select
         label="Status"
         name="status"
@@ -40,7 +40,7 @@ export function AdminFilters({
       />
       <Input label="Search" name="search" defaultValue={search} placeholder="Area, district, address" />
       <Button type="submit" className="w-full self-end md:w-auto">
-        Apply
+        Apply filters
       </Button>
     </form>
   );

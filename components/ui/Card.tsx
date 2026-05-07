@@ -21,16 +21,16 @@ const variants = {
   success:
     "border-green-200 bg-green-50 shadow-card",
   mapOverlay:
-    "border-civic-line bg-white/90 shadow-soft backdrop-blur",
+    "border-civic-line bg-white/95 shadow-soft backdrop-blur",
 };
 
 export function Card({ title, description, variant = "default", children, className }: CardProps) {
   return (
-    <section className={cn("rounded-2xl border p-5", variants[variant], className)}>
+    <section className={cn("min-w-0 rounded-lg border p-5", variants[variant], className)}>
       {title || description ? (
         <div className="mb-4">
           {title ? (
-            <h2 className="text-xs font-bold uppercase tracking-widest text-civic-muted">{title}</h2>
+            <h2 className="text-sm font-black leading-6 text-civic-text">{title}</h2>
           ) : null}
           {description ? (
             <p className="mt-1 text-sm leading-6 text-civic-muted">{description}</p>

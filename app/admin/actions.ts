@@ -11,6 +11,10 @@ import {
   rejectReport,
   updateReport,
 } from "@/lib/data/reports";
+import {
+  approvePartnerRequest,
+  rejectPartnerRequest,
+} from "@/lib/data/partners";
 import { safeNumber, safeString } from "@/lib/utils";
 import {
   ACCEPTED_UPLOAD_IMAGE_LABEL,
@@ -164,6 +168,21 @@ export async function markDuplicateAction(id: string, formData: FormData) {
   await markDuplicate(id, duplicateOfId);
   revalidatePath("/admin");
   revalidatePath("/map");
+}
+
+export async function approvePartnerRequestAction(id: string) {
+  await requireAdmin();
+  const { partner, token } = await approvePartnerRequest(id);
+  revalidatePath("/admin");
+  const setupUrl = `/partner/setup?token=${encodeURIComponent(token)}`;
+  redirect(`/admin?partnerApproved=${encodeURIComponent(partner.business_name)}&setup=${encodeURIComponent(setupUrl)}`);
+}
+
+export async function rejectPartnerRequestAction(id: string, formData: FormData) {
+  await requireAdmin();
+  await rejectPartnerRequest(id, safeString(formData.get("rejection_note")));
+  revalidatePath("/admin");
+  redirect("/admin?partnerRejected=1");
 }
 
 export async function logoutAction() {

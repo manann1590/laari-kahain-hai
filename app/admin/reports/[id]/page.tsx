@@ -58,11 +58,11 @@ export default async function AdminReportDetailPage({
       description="Check location, image safety, menu details, contact info, and moderation history before publishing."
       actions={
         <>
-          <Button href="/admin" variant="secondary">
+          <Button href="/admin" variant="secondary" className="w-full sm:w-auto">
             Back to dashboard
           </Button>
           {report.status === "approved" || report.status === "verified" ? (
-            <Button href={`/reports/${report.id}`} variant="secondary">
+            <Button href={`/reports/${report.id}`} variant="secondary" className="w-full sm:w-auto">
               Public page
             </Button>
           ) : null}
@@ -70,7 +70,7 @@ export default async function AdminReportDetailPage({
       }
     >
       {query.saved ? (
-        <p className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+        <p className="mb-4 rounded-md border border-cyan-200 bg-cyan-50 p-3 text-sm text-cyan-950">
           Vendor changes saved.
         </p>
       ) : null}
@@ -128,7 +128,7 @@ export default async function AdminReportDetailPage({
                   return (
                     <li
                       key={nearby.id}
-                      className="flex items-start justify-between gap-3 rounded-lg border border-civic-amber/35 bg-civic-amber/10 p-3 text-sm"
+                      className="flex min-w-0 items-start justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm"
                     >
                       <div className="min-w-0">
                         {nearby.tracking_id ? (
@@ -136,7 +136,7 @@ export default async function AdminReportDetailPage({
                             {nearby.tracking_id}
                           </p>
                         ) : null}
-                        <p className="mt-0.5 text-civic-amber">
+                        <p className="mt-0.5 text-amber-900">
                           {FOOD_CATEGORIES[nearby.category]?.label ?? nearby.category}
                         </p>
                         <p className="mt-0.5 text-xs text-civic-muted">
@@ -162,9 +162,9 @@ export default async function AdminReportDetailPage({
             <div className="space-y-4">
               {/* Approve — via SafetyChecklist, only shown for pending */}
               {report.status === "pending" ? (
-                <div className="rounded-lg border border-civic-green/35 bg-civic-green/10 p-3 text-sm text-civic-green">
+                <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-950">
                   <p className="mb-2 font-black">Approve</p>
-                  <p className="mb-3 text-xs text-civic-green">
+                  <p className="mb-3 text-xs text-green-800">
                     Use the safety checklist above to enable approval.
                   </p>
                 </div>
@@ -202,8 +202,8 @@ export default async function AdminReportDetailPage({
             ) : (
               <ol className="space-y-3">
                 {events.map((event) => (
-                  <li key={event.id} className="rounded-md border border-civic-line bg-civic-ink p-3 text-sm">
-                    <p className="font-black capitalize text-white">
+                  <li key={event.id} className="rounded-md border border-civic-line bg-civic-bg p-3 text-sm">
+                    <p className="font-black capitalize text-civic-text">
                       {event.event_type.replaceAll("_", " ")}
                     </p>
                     <p className="mt-1 text-xs text-civic-muted">

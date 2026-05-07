@@ -36,6 +36,7 @@ export const reportCreateSchema = z.object({
   reporter_phone_hash: optionalText,
   admin_notes: optionalText,
   verification_level: z.enum(["high", "medium", "low"]).optional(),
+  partner_id: optionalText,
 });
 
 export const reportUpdateSchema = reportCreateSchema

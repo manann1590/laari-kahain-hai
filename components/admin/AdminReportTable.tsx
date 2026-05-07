@@ -28,7 +28,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
       {/* Mobile cards */}
       <div className="space-y-3 md:hidden">
         {reports.map((report) => (
-          <article key={report.id} className="rounded-lg border border-civic-line bg-civic-soft/85 p-3 shadow-sm">
+          <article key={report.id} className="min-w-0 rounded-lg border border-civic-line bg-white p-3 shadow-sm">
             <div className="flex gap-3">
               {report.image_url ? (
                 <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-md bg-civic-soft">
@@ -53,7 +53,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                     {report.tracking_id}
                   </p>
                 ) : null}
-                <h2 className="mt-1 truncate font-black text-white">
+                <h2 className="mt-1 line-clamp-2 font-black leading-tight text-civic-text">
                   {report.title || FOOD_CATEGORIES[report.category].label}
                 </h2>
                 <p className="mt-1 text-sm text-civic-muted">
@@ -92,9 +92,9 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
       </div>
 
       {/* Desktop table */}
-      <div className="hidden overflow-x-auto rounded-lg border border-civic-line bg-civic-soft/85 md:block">
-        <table className="min-w-full divide-y divide-civic-line text-sm">
-          <thead className="bg-civic-ink text-left text-xs uppercase tracking-normal text-civic-muted">
+      <div className="hidden overflow-x-auto rounded-lg border border-civic-line bg-white md:block">
+        <table className="min-w-[980px] divide-y divide-civic-line text-sm">
+          <thead className="bg-civic-bg text-left text-xs font-bold text-civic-muted">
             <tr>
               <th className="px-4 py-3">Image</th>
               <th className="px-4 py-3">Vendor</th>
@@ -108,7 +108,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
           </thead>
           <tbody className="divide-y divide-civic-line">
             {reports.map((report) => (
-              <tr key={report.id} className="align-top hover:bg-white/5">
+              <tr key={report.id} className="align-top hover:bg-civic-bg/60">
                 <td className="px-4 py-3">
                   {report.image_url ? (
                     <div className="relative h-14 w-20 overflow-hidden rounded bg-civic-ink">
@@ -121,18 +121,18 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                       />
                     </div>
                   ) : (
-                    <div className="h-14 w-20 rounded bg-civic-ink" />
+                    <div className="h-14 w-20 rounded bg-civic-bg" />
                   )}
                 </td>
                 <td className="px-4 py-3">
                   <CategoryBadge category={report.category} />
-                  <p className="mt-2 max-w-xs truncate font-black text-white">
+                  <p className="mt-2 max-w-xs truncate font-black text-civic-text">
                     {report.title || FOOD_CATEGORIES[report.category].label}
                   </p>
                 </td>
                 <td className="px-4 py-3">
                   {report.tracking_id ? (
-                    <span className="rounded-md bg-civic-ink px-2 py-0.5 font-mono text-xs font-black text-civic-green">
+                    <span className="rounded-md bg-civic-bg px-2 py-0.5 font-mono text-xs font-black text-civic-green">
                       {report.tracking_id}
                     </span>
                   ) : (
@@ -148,7 +148,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
                 <td className="px-4 py-3 text-civic-muted">{formatDate(report.created_at)}</td>
                 <td className="px-4 py-3 capitalize text-civic-muted">{report.severity || "medium"}</td>
                 <td className="px-4 py-3">
-                  <div className="flex min-w-48 flex-wrap gap-2">
+                  <div className="flex min-w-0 flex-wrap gap-2">
                     <Button href={`/admin/reports/${report.id}`} size="sm" variant="secondary">
                       <Eye className="h-4 w-4" aria-hidden="true" />
                       Review

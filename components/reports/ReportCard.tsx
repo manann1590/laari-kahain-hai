@@ -11,7 +11,7 @@ export function ReportCard({ report }: { report: PublicReport }) {
   return (
     <Link
       href={`/reports/${report.id}`}
-      className="grid overflow-hidden rounded-lg border border-civic-line bg-civic-soft/85 shadow-sm transition hover:-translate-y-0.5 hover:shadow-soft"
+      className="grid min-w-0 overflow-hidden rounded-lg border border-civic-line bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-soft"
     >
       {report.image_url ? (
         <div className="relative aspect-[16/9] bg-civic-ink">
@@ -29,7 +29,7 @@ export function ReportCard({ report }: { report: PublicReport }) {
           <CategoryBadge category={report.category} />
           <ReportStatusBadge status={report.status} />
         </div>
-        <h2 className="mt-3 text-base font-black text-white">
+        <h2 className="mt-3 text-base font-black text-civic-text">
           {report.title || FOOD_CATEGORIES[report.category].label}
         </h2>
         <p className="mt-2 line-clamp-2 text-sm leading-5 text-civic-muted">

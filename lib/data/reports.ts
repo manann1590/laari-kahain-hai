@@ -46,6 +46,7 @@ const PUBLIC_REPORT_COLUMNS = [
   "status",
   "severity",
   "verification_level",
+  "partner_id",
   "confirmation_count",
   "created_at",
   "updated_at",
@@ -93,6 +94,14 @@ export async function getPublicReports(filters?: ReportFilters): Promise<PublicR
   }
   if (filters?.area) {
     query = query.ilike("area", `%${filters.area}%`);
+  }
+  if (filters?.search) {
+    const search = filters.search.replace(/[,%()]/g, " ").trim();
+    if (search) {
+      query = query.or(
+        `title.ilike.%${search}%,area.ilike.%${search}%,district.ilike.%${search}%,address_text.ilike.%${search}%,description.ilike.%${search}%,menu_text.ilike.%${search}%,cuisine_tags.ilike.%${search}%`,
+      );
+    }
   }
 
   const { data, error } = await query;
@@ -215,6 +224,7 @@ export async function createPublicReport(input: ReportInsert): Promise<Report> {
       hours_text: parsed.hours_text,
       stall_photo_url: parsed.stall_photo_url,
       stall_photo_path: parsed.stall_photo_path,
+      partner_id: parsed.partner_id,
       severity: parsed.severity || "medium",
       verification_level: parsed.verification_level || "low",
       status: "pending",
@@ -230,6 +240,53 @@ export async function createPublicReport(input: ReportInsert): Promise<Report> {
     new_status: data.status,
     note: "Listing submitted through the public portal.",
     actor: "public",
+  });
+
+  return data as Report;
+}
+
+export async function createPartnerReport(input: ReportInsert): Promise<Report> {
+  const parsed = reportCreateSchema.parse(input);
+  const { data, error } = await adminClient()
+    .from("vendors")
+    .insert(stripUndefined({
+      category: parsed.category,
+      title: parsed.title,
+      description: parsed.description,
+      latitude: parsed.latitude,
+      longitude: parsed.longitude,
+      address_text: parsed.address_text,
+      area: parsed.area,
+      district: parsed.district,
+      city: parsed.city,
+      image_url: parsed.image_url,
+      image_path: parsed.image_path,
+      vendor_phone: parsed.vendor_phone,
+      vendor_whatsapp: parsed.vendor_whatsapp,
+      menu_text: parsed.menu_text,
+      menu_image_url: parsed.menu_image_url,
+      menu_image_path: parsed.menu_image_path,
+      cuisine_tags: parsed.cuisine_tags,
+      price_range: parsed.price_range,
+      hours_text: parsed.hours_text,
+      stall_photo_url: parsed.stall_photo_url,
+      stall_photo_path: parsed.stall_photo_path,
+      partner_id: parsed.partner_id,
+      severity: parsed.severity || "medium",
+      verification_level: parsed.verification_level || "medium",
+      status: "pending",
+      source: "partner_portal",
+    }))
+    .select("*")
+    .single();
+
+  if (error) throwSupabaseError("Could not submit partner listing", error);
+
+  await addVendorEvent(data.id, {
+    event_type: "submitted",
+    new_status: data.status,
+    note: "Listing submitted through the partner portal.",
+    actor: "partner",
   });
 
   return data as Report;
@@ -373,6 +430,17 @@ export async function getNearbyReports(
   return ((data || []) as Report[]).filter(
     (r) => distanceMeters(point, { latitude: r.latitude, longitude: r.longitude }) <= radiusMeters,
   );
+}
+
+export async function getPartnerReports(partnerId: string): Promise<Report[]> {
+  const { data, error } = await adminClient()
+    .from("vendors")
+    .select("*")
+    .eq("partner_id", partnerId)
+    .order("created_at", { ascending: false });
+
+  if (error) throwSupabaseError("Could not load partner listings", error);
+  return (data || []) as Report[];
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {

@@ -97,6 +97,40 @@ CREATE TABLE IF NOT EXISTS public.listing_confirmations (
   created_at        TIMESTAMPTZ DEFAULT timezone('utc', now())
 );
 
+-- ─────────────────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.partner_accounts (
+  id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_name         TEXT        NOT NULL,
+  owner_name            TEXT,
+
+  -- Sensitive fields are written by the Next.js server only.
+  -- mobile_hash is used for lookup; mobile_encrypted/whatsapp_encrypted are encrypted at app level.
+  mobile_encrypted      TEXT,
+  mobile_hash           TEXT        NOT NULL UNIQUE,
+  whatsapp_encrypted    TEXT,
+  password_hash         TEXT,
+  password_salt         TEXT,
+
+  status                TEXT        NOT NULL DEFAULT 'pending' CHECK (status IN (
+                            'pending','approved','active','rejected'
+                          )),
+  onboarding_token_hash TEXT        UNIQUE,
+
+  area                  TEXT,
+  district              TEXT,
+  address_text          TEXT,
+  city                  TEXT        DEFAULT 'Ahmedabad',
+  admin_notes           TEXT,
+  rejection_note        TEXT,
+
+  approved_at           TIMESTAMPTZ,
+  activated_at          TIMESTAMPTZ,
+  rejected_at           TIMESTAMPTZ,
+  created_at            TIMESTAMPTZ DEFAULT timezone('utc', now()),
+  updated_at            TIMESTAMPTZ DEFAULT timezone('utc', now())
+);
+
 
 -- ── 3. Indexes ────────────────────────────────────────────────────────────────
 
@@ -109,6 +143,8 @@ CREATE INDEX IF NOT EXISTS vendors_created_at_idx      ON public.vendors(created
 CREATE INDEX IF NOT EXISTS vendors_lat_lng_idx         ON public.vendors(latitude, longitude);
 CREATE INDEX IF NOT EXISTS vendors_duplicate_of_idx    ON public.vendors(duplicate_of);
 CREATE INDEX IF NOT EXISTS vendor_events_vendor_id_idx ON public.vendor_events(vendor_id);
+CREATE INDEX IF NOT EXISTS partner_accounts_status_idx ON public.partner_accounts(status);
+CREATE INDEX IF NOT EXISTS partner_accounts_created_at_idx ON public.partner_accounts(created_at DESC);
 
 
 -- ── 4. Functions ──────────────────────────────────────────────────────────────
@@ -154,6 +190,11 @@ CREATE TRIGGER vendors_set_updated_at
   BEFORE UPDATE ON public.vendors
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+DROP TRIGGER IF EXISTS partner_accounts_set_updated_at ON public.partner_accounts;
+CREATE TRIGGER partner_accounts_set_updated_at
+  BEFORE UPDATE ON public.partner_accounts
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
 DROP TRIGGER IF EXISTS vendors_set_tracking_id ON public.vendors;
 CREATE TRIGGER vendors_set_tracking_id
   BEFORE INSERT ON public.vendors
@@ -165,6 +206,7 @@ CREATE TRIGGER vendors_set_tracking_id
 ALTER TABLE public.vendors               ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.vendor_events         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.listing_confirmations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.partner_accounts      ENABLE ROW LEVEL SECURITY;
 
 -- vendors: anyone can submit a new listing (server validates before insert)
 DROP POLICY IF EXISTS "Public can submit vendors" ON public.vendors;
@@ -224,6 +266,8 @@ CREATE POLICY "Public read vendor images"
 
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS menu_image_url  TEXT;
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS menu_image_path TEXT;
+ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS partner_id UUID REFERENCES public.partner_accounts(id);
+CREATE INDEX IF NOT EXISTS vendors_partner_id_idx ON public.vendors(partner_id);
 
 
 -- ══════════════════════════════════════════════════════════════════════════════

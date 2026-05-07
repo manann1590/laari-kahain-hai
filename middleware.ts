@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ADMIN_COOKIE_NAME = "lari-local_admin";
+const ADMIN_COOKIE_NAME = "foodradar_admin";
 
 async function sha256(value: string) {
   const bytes = new TextEncoder().encode(value);

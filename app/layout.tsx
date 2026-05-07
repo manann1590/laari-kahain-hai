@@ -6,16 +6,20 @@ import { getRequestLocale } from "@/lib/i18n-server";
 
 export const metadata: Metadata = {
   title: {
-    default: "FoodRadar — Ahmedabad Street Food Map",
+    default: "FoodRadar - Ahmedabad Street Food Map",
     template: "%s | FoodRadar",
   },
   description:
-    "Find food trucks, carts, and street food spots in Ahmedabad — live locations, menus, photos, and direct contact. Find Food. Live Now.",
+    "Find verified Ahmedabad street-food vendors with menus, photos, phone, WhatsApp, directions, and live location.",
   openGraph: {
-    title: "FoodRadar — Ahmedabad Street Food Map",
+    title: "FoodRadar - Ahmedabad Street Food Map",
     description:
-      "Find food trucks, carts, and street food spots in Ahmedabad — live locations, menus, photos, and direct contact.",
+      "Verified street-food listings, live discovery, menus, and direct vendor contact in Ahmedabad.",
     type: "website",
+  },
+  icons: {
+    icon: "/brand/foodradar-icon.png",
+    apple: "/brand/foodradar-icon.png",
   },
 };
 

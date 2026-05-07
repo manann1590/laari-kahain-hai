@@ -30,7 +30,7 @@ function SubmitButton({ label, isPreparing }: { label: string; isPreparing: bool
   const { pending } = useFormStatus();
   const isBusy = pending || isPreparing;
   return (
-    <Button type="submit" disabled={isBusy}>
+    <Button type="submit" disabled={isBusy} className="w-full sm:w-auto">
       <Save className="h-4 w-4" aria-hidden="true" />
       {isPreparing ? "Preparing..." : pending ? "Saving..." : label}
     </Button>
@@ -93,7 +93,7 @@ export function AdminReportForm({
 
   return (
     <form action={submitWithCompressedImage} className="space-y-6">
-      <div className="rounded-lg border border-civic-amber/35 bg-civic-amber/10 p-4 text-sm text-civic-amber">
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
         <div className="flex gap-3">
           <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           <p>
@@ -144,16 +144,16 @@ export function AdminReportForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-white">
+        <label className="block text-sm font-semibold text-civic-text">
           Menu file{" "}
           <span className="font-normal text-civic-muted">
-            (JPG, PNG, WebP or PDF · max {MAX_MENU_FILE_LABEL})
+            (JPG, PNG, WebP or PDF - max {MAX_MENU_FILE_LABEL})
           </span>
         </label>
         {report?.menu_image_url ? (
           <p className="mt-1 text-xs text-civic-muted">
             Current:{" "}
-            <a href={report.menu_image_url} target="_blank" rel="noopener noreferrer" className="underline text-civic-teal">
+            <a href={report.menu_image_url} target="_blank" rel="noopener noreferrer" className="text-civic-orange underline">
               View menu file
             </a>
           </p>
@@ -214,9 +214,9 @@ export function AdminReportForm({
           Preview in Maps
         </Button>
         {!validLocation ? (
-          <p className="text-sm text-red-700">Enter a valid latitude and longitude first.</p>
+          <p className="text-sm text-civic-red">Enter a valid latitude and longitude first.</p>
         ) : null}
-        {locationError ? <p className="text-sm text-red-700">{locationError}</p> : null}
+        {locationError ? <p className="text-sm text-civic-red">{locationError}</p> : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
