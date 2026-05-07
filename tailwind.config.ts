@@ -38,7 +38,6 @@ const config: Config = {
           soft:   "#F8FAFC",
           amber:  "#F59E0B",
           green:  "#22C55E",
-          teal:   "#FF4D3D",
           blue:   "#2563EB",
         },
       },

@@ -23,7 +23,7 @@ export default async function AdminLoginPage({
     <div className="mx-auto flex min-h-[70vh] max-w-7xl items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <p className="text-xs font-black uppercase tracking-normal text-civic-teal">Admin moderation</p>
+          <p className="text-xs font-black uppercase tracking-normal text-civic-orange">Admin moderation</p>
           <h1 className="mt-2 text-3xl font-black text-civic-text">Admin access</h1>
           <p className="mt-3 text-sm leading-6 text-civic-muted">
             Admin access is required to review and publish vendor listings.

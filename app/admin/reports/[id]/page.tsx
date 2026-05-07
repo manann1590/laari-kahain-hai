@@ -145,7 +145,7 @@ export default async function AdminReportDetailPage({
                       </div>
                       <Link
                         href={`/admin/reports/${nearby.id}`}
-                        className="shrink-0 text-civic-teal hover:underline"
+                        className="shrink-0 text-civic-orange hover:underline"
                         aria-label={`Review nearby vendor ${nearby.tracking_id ?? nearby.id}`}
                       >
                         <ArrowRight className="h-4 w-4" aria-hidden="true" />
@@ -220,7 +220,7 @@ export default async function AdminReportDetailPage({
                         href={event.proof_image_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-2 block text-xs text-civic-teal underline"
+                        className="mt-2 block text-xs text-civic-orange underline"
                       >
                         View proof image
                       </a>

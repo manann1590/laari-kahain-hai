@@ -31,9 +31,9 @@ export function LanguageSwitcher({ locale, label }: { locale: Locale; label: str
           type="button"
           onClick={() => changeLanguage(item)}
           className={cn(
-            "h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition focus:outline-none focus:ring-2 focus:ring-civic-teal/30",
+            "h-8 min-w-8 rounded-lg px-2 text-xs font-bold transition focus:outline-none focus:ring-2 focus:ring-civic-orange/30",
             locale === item
-              ? "bg-civic-teal text-white"
+              ? "bg-civic-orange text-white"
               : "text-civic-muted hover:bg-civic-soft hover:text-civic-ink",
           )}
           aria-pressed={locale === item}

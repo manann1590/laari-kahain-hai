@@ -109,7 +109,7 @@ export default async function ReportDetailPage({
       {justSubmitted ? (
         <Card variant="success" className="mb-6">
           <div className="flex flex-col items-start gap-4 sm:flex-row">
-            <CheckCircle2 className="h-8 w-8 shrink-0 text-civic-teal" aria-hidden="true" />
+            <CheckCircle2 className="h-8 w-8 shrink-0 text-civic-orange" aria-hidden="true" />
             <div>
               <h2 className="text-xl font-black text-civic-text">{t.reportDetail.submittedSuccess}</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-civic-muted">
@@ -122,7 +122,7 @@ export default async function ReportDetailPage({
 
       {report.tracking_id ? (
         <div className="mb-6 flex min-w-0 items-center gap-3 rounded-lg border border-civic-line bg-white px-4 py-3 shadow-sm">
-          <ClipboardCopy className="h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
+          <ClipboardCopy className="h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="text-xs font-black uppercase tracking-normal text-civic-muted">{t.common.trackingId}</p>
             <p className="mt-0.5 break-all font-mono text-base font-black text-civic-text">{report.tracking_id}</p>
@@ -175,7 +175,7 @@ export default async function ReportDetailPage({
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 rounded-lg border border-civic-line bg-white px-4 py-3 text-sm font-semibold text-civic-text hover:bg-civic-bg"
                 >
-                  <ExternalLink className="h-4 w-4 shrink-0 text-civic-teal" aria-hidden="true" />
+                  <ExternalLink className="h-4 w-4 shrink-0 text-civic-orange" aria-hidden="true" />
                   Open menu PDF
                 </a>
               ) : (
@@ -227,7 +227,7 @@ export default async function ReportDetailPage({
           <Card title={t.common.timeline}>
             <ol className="space-y-4 text-sm">
               <li className="flex gap-3">
-                <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
+                <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
                 <div>
                   <p className="font-black text-civic-text">{t.reportDetail.submitted}</p>
                   <p className="text-civic-muted">{formatDateTime(report.created_at)}</p>
@@ -235,7 +235,7 @@ export default async function ReportDetailPage({
               </li>
               {events.map((event) => (
                 <li key={event.id} className="flex gap-3">
-                  <Workflow className="mt-0.5 h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
+                  <Workflow className="mt-0.5 h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
                   <div className="min-w-0 flex-1">
                     <p className="font-black capitalize text-civic-text">
                       {event.event_type.replace(/_/g, " ")}
@@ -271,7 +271,7 @@ export default async function ReportDetailPage({
 
           <Card title={t.common.privacyNote} variant="success">
             <p className="flex gap-3 text-sm leading-6 text-civic-muted">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-civic-teal" aria-hidden="true" />
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
               {t.reportDetail.privacyCopy}
             </p>
           </Card>
