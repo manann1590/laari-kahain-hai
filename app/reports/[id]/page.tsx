@@ -14,7 +14,7 @@ import { getRequestLocale } from "@/lib/i18n-server";
 import { getCopy, categoryLabel } from "@/lib/i18n";
 import { appConfig } from "@/lib/config";
 import { getPublicReportById } from "@/lib/data/reports";
-import { titleFromLocation } from "@/lib/utils";
+import { titleFromLocation, formatDateTime } from "@/lib/utils";
 import { googleMapsLink } from "@/lib/geo";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card } from "@/components/ui/Card";
