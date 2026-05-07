@@ -100,79 +100,100 @@ export default async function AdminDashboardPage({
             </Card>
           ) : null}
 
-          <StatsCards stats={data.stats} />
+          <StatsCards stats={data.stats} filterBaseUrl="/admin" />
 
-          <Card
-            title="Partner onboarding"
-            description="Approve partners before they can create vendor listings from /partner."
-          >
-            {data.partners.length === 0 ? (
-              <p className="text-sm text-civic-muted">No partner requests yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {data.partners.map((partner) => (
-                  <article key={partner.id} className="rounded-lg border border-civic-line bg-civic-bg p-4">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded-full border border-civic-line bg-white px-3 py-1 text-xs font-bold text-civic-text">
-                            <Store className="h-3.5 w-3.5" aria-hidden="true" />
-                            {partner.status}
-                          </span>
+          {/* ── Partner Requests ────────────────────────────────── */}
+          <div>
+            <h2 className="text-lg font-bold text-civic-text">Partner Requests</h2>
+            <p className="mt-1 text-sm text-civic-muted">
+              Businesses applying to list their vendors on FoodRadar. Approve requests to onboard new partners.
+            </p>
+            <div className="mt-4">
+              <Card
+                title=""
+                description="Approve partners before they can create vendor listings from /partner."
+              >
+                {data.partners.length === 0 ? (
+                  <p className="text-sm text-civic-muted">No partner requests yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {data.partners.map((partner) => (
+                      <article key={partner.id} className="rounded-lg border border-civic-line bg-civic-bg p-4">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-civic-line bg-white px-3 py-1 text-xs font-bold text-civic-text">
+                                <Store className="h-3.5 w-3.5" aria-hidden="true" />
+                                {partner.status}
+                              </span>
+                            </div>
+                            <h3 className="mt-3 font-black text-civic-text">{partner.business_name}</h3>
+                            <p className="mt-1 text-sm text-civic-muted">
+                              {[partner.owner_name, partner.area, partner.district].filter(Boolean).join(" · ") || "Location not added"}
+                            </p>
+                            {partner.address_text ? (
+                              <p className="mt-1 text-sm leading-6 text-civic-muted">{partner.address_text}</p>
+                            ) : null}
+                          </div>
+                          {partner.status === "pending" ? (
+                            <div className="grid gap-2 sm:min-w-72">
+                              <form action={approvePartnerRequestAction.bind(null, partner.id)}>
+                                <Button type="submit" variant="success" className="w-full">
+                                  <Check className="h-4 w-4" aria-hidden="true" />
+                                  Approve partner
+                                </Button>
+                              </form>
+                              <form action={rejectPartnerRequestAction.bind(null, partner.id)} className="grid gap-2">
+                                <Input label="Rejection note" name="rejection_note" placeholder="Optional admin note" />
+                                <Button type="submit" variant="danger" className="w-full">
+                                  <X className="h-4 w-4" aria-hidden="true" />
+                                  Reject
+                                </Button>
+                              </form>
+                            </div>
+                          ) : null}
                         </div>
-                        <h2 className="mt-3 font-black text-civic-text">{partner.business_name}</h2>
-                        <p className="mt-1 text-sm text-civic-muted">
-                          {[partner.owner_name, partner.area, partner.district].filter(Boolean).join(" · ") || "Location not added"}
-                        </p>
-                        {partner.address_text ? (
-                          <p className="mt-1 text-sm leading-6 text-civic-muted">{partner.address_text}</p>
-                        ) : null}
-                      </div>
-
-                      {partner.status === "pending" ? (
-                        <div className="grid gap-2 sm:min-w-72">
-                          <form action={approvePartnerRequestAction.bind(null, partner.id)}>
-                            <Button type="submit" variant="success" className="w-full">
-                              <Check className="h-4 w-4" aria-hidden="true" />
-                              Approve partner
-                            </Button>
-                          </form>
-                          <form action={rejectPartnerRequestAction.bind(null, partner.id)} className="grid gap-2">
-                            <Input label="Rejection note" name="rejection_note" placeholder="Optional admin note" />
-                            <Button type="submit" variant="danger" className="w-full">
-                              <X className="h-4 w-4" aria-hidden="true" />
-                              Reject
-                            </Button>
-                          </form>
-                        </div>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </Card>
-
-          {data.stats.pending > 0 ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-3">
-                  <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-civic-amber" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-civic-text">{data.stats.pending} listings need review</p>
-                    <p className="mt-1 text-sm leading-6 text-amber-800">
-                      Pending vendor listings are hidden publicly until moderation is complete.
-                    </p>
+                      </article>
+                    ))}
                   </div>
-                </div>
-                <Button href="/admin?status=pending" variant="secondary" className="w-full sm:w-auto">
-                  View pending
-                </Button>
-              </div>
+                )}
+              </Card>
             </div>
-          ) : null}
-          <AdminFilters status={status} category={category} search={search} />
-          <AdminReportTable reports={data.reports} />
+          </div>
+
+          <hr className="border-t border-civic-line" />
+
+          {/* ── Vendor Listings ─────────────────────────────────── */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-civic-text">Vendor Listings</h2>
+              <p className="mt-1 text-sm text-civic-muted">
+                Individual food-spot submissions awaiting moderation. Approve only clear, location-backed listings.
+              </p>
+            </div>
+
+            {data.stats.pending > 0 ? (
+              <div className="rounded-lg border border-civic-amber/35 bg-civic-amber/10 p-5 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-3">
+                    <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-civic-amber" aria-hidden="true" />
+                    <div>
+                      <p className="font-black text-white">{data.stats.pending} listings need review</p>
+                      <p className="mt-1 text-sm leading-6 text-civic-amber">
+                        Pending vendor listings are hidden publicly until moderation is complete.
+                      </p>
+                    </div>
+                  </div>
+                  <Button href="/admin?status=pending" variant="secondary" className="w-full sm:w-auto">
+                    View pending
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            <AdminFilters status={status} category={category} search={search} />
+            <AdminReportTable reports={data.reports} />
+          </div>
         </div>
       )}
     </PageShell>

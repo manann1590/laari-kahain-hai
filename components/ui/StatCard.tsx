@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ export function StatCard({
   label,
   helperText,
   tone = "blue",
+  href,
   className,
 }: {
   icon: LucideIcon;
@@ -22,18 +24,13 @@ export function StatCard({
   label: string;
   helperText?: string;
   tone?: "blue" | "orange" | "green" | "amber" | "slate";
+  href?: string;
   className?: string;
 }) {
   const t = tones[tone];
 
-  return (
-    <div
-      className={cn(
-        "min-w-0 rounded-lg border border-civic-line bg-white p-5 shadow-card ring-1",
-        t.ring,
-        className,
-      )}
-    >
+  const inner = (
+    <>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-civic-muted">{label}</p>
@@ -46,6 +43,27 @@ export function StatCard({
       {helperText ? (
         <p className="mt-3 text-xs leading-5 text-civic-muted">{helperText}</p>
       ) : null}
+    </>
+  );
+
+  const baseClass = cn(
+    "min-w-0 rounded-lg border border-civic-line bg-white p-5 shadow-card ring-1",
+    t.ring,
+    href && "cursor-pointer transition-shadow hover:shadow-md hover:ring-2",
+    className,
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={baseClass}>
+        {inner}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={baseClass}>
+      {inner}
     </div>
   );
 }
