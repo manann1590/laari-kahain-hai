@@ -28,73 +28,84 @@ export const SEVERITY_VALUES: Severity[] = ["low", "medium", "high", "critical"]
 
 export const FOOD_CATEGORIES: Record<
   FoodCategory,
-  { label: string; description: string; marker: string; badge: string }
+  { label: string; description: string; marker: string; badge: string; icon: string }
 > = {
   chaat_snacks: {
     label: "Chaat & Snacks",
     description: "Pani puri, bhel, dabeli, vada pav, sandwiches, and quick bites",
     marker: "#7C3AED",
     badge: "bg-violet-100 text-violet-950 border-violet-200",
+    icon: "Utensils",
   },
   tea_coffee: {
     label: "Tea & Coffee",
     description: "Chai, coffee, cocoa, coolers, and tiny hangout counters",
     marker: "#6366F1",
     badge: "bg-indigo-100 text-indigo-950 border-indigo-200",
+    icon: "Coffee",
   },
   meals_thali: {
     label: "Meals & Thali",
     description: "Lunch plates, dinner boxes, paratha, khichdi, rice bowls, and full meals",
     marker: "#00B8D9",
     badge: "bg-cyan-100 text-cyan-950 border-cyan-200",
+    icon: "UtensilsCrossed",
   },
   fast_food: {
     label: "Fast Food",
     description: "Burgers, pizzas, fries, rolls, wraps, momos, and fusion plates",
     marker: "#8B5CF6",
     badge: "bg-violet-100 text-violet-950 border-violet-200",
+    icon: "Sandwich",
   },
   south_indian: {
     label: "South Indian",
     description: "Dosa, idli, uttapam, medu vada, filter coffee, and podi magic",
     marker: "#3867D6",
     badge: "bg-blue-100 text-blue-950 border-blue-200",
+    icon: "Flame",
   },
   desserts: {
     label: "Desserts",
     description: "Ice cream, kulfi, falooda, waffles, cakes, and sweet cravings",
     marker: "#7C83FF",
     badge: "bg-purple-100 text-purple-950 border-purple-200",
+    icon: "IceCream",
   },
   juice_shakes: {
     label: "Juice & Shakes",
     description: "Fresh juice, soda, lassi, shakes, smoothies, and summer rescue",
     marker: "#0891B2",
     badge: "bg-sky-100 text-sky-950 border-sky-200",
+    icon: "GlassWater",
   },
   street_chinese: {
     label: "Street Chinese",
     description: "Noodles, manchurian, fried rice, chilli paneer, and wok counters",
     marker: "#7C3AED",
     badge: "bg-violet-100 text-violet-950 border-violet-200",
+    icon: "ChefHat",
   },
   breakfast: {
     label: "Breakfast",
     description: "Poha, fafda, jalebi, maska bun, eggs, and morning staples",
     marker: "#F59E0B",
     badge: "bg-yellow-100 text-yellow-950 border-yellow-200",
+    icon: "Sunrise",
   },
   late_night: {
     label: "Late Night",
     description: "After-hours bites, chai, rolls, maggi, eggs, and midnight saviors",
     marker: "#21170F",
     badge: "bg-stone-100 text-stone-950 border-stone-300",
+    icon: "Moon",
   },
   other: {
     label: "Other Food Spot",
     description: "Anything tasty that does not fit the usual buckets",
     marker: "#64748B",
     badge: "bg-slate-100 text-slate-950 border-slate-200",
+    icon: "MoreHorizontal",
   },
 };
 

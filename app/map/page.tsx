@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import {
   Clock3,
   Coffee,
-  ExternalLink,
   Filter,
   Info,
   ListFilter,
   MapPinned,
   Moon,
   Navigation,
-  Phone,
   Sandwich,
   Search,
   ShieldCheck,
@@ -23,7 +20,7 @@ import { categoryLabel, getCopy, type Locale } from "@/lib/i18n";
 import type { FoodCategory } from "@/lib/supabase/types";
 import { getPublicReports } from "@/lib/data/reports";
 import { normalizeFoodCategory } from "@/lib/validators/report";
-import { formatDate, titleFromLocation } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { PageShell } from "@/components/layout/PageShell";
 import { Select } from "@/components/ui/Select";
 import { Input } from "@/components/ui/Input";
@@ -31,7 +28,7 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { PublicMapLoader } from "@/components/map/PublicMapLoader";
 import { Card } from "@/components/ui/Card";
-import { cn } from "@/lib/utils";
+import { VendorListView } from "@/components/map/VendorListView";
 
 export const metadata: Metadata = {
   title: "Food Map",
@@ -54,11 +51,6 @@ const quickFilters: Array<{
   { label: "Late night", href: "/map?category=late_night", icon: Moon, active: (category?: FoodCategory | null) => category === "late_night" },
 ] as const;
 
-function telHref(phone?: string | null) {
-  if (!phone) return "";
-  const normalized = phone.replace(/[^\d+]/g, "");
-  return normalized ? `tel:${normalized}` : "";
-}
 
 function FilterForm({
   category,
@@ -216,7 +208,8 @@ export default async function MapPage({
                 </Button>
               </form>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              {/* Category chips — hidden on xl where the sidebar select handles category filtering */}
+              <div className="mt-3 flex flex-wrap gap-2 xl:hidden">
                 {quickFilters.map((item) => {
                   const Icon = item.icon;
                   const isActive = item.active(category, near, open);
@@ -252,120 +245,7 @@ export default async function MapPage({
                 secondaryAction={<Button href="/map" variant="secondary">Clear search</Button>}
               />
             ) : (
-              <Card title={t.map.listView} description={t.map.listCopy} className="p-0">
-                <div className="grid gap-4 p-4 md:hidden">
-                  {reports.map((report) => (
-                    <article key={report.id} className="min-w-0 rounded-lg border border-civic-line bg-white p-3 shadow-sm">
-                      <div className="flex gap-3">
-                        {report.image_url ? (
-                          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-civic-bg">
-                            <Image
-                              src={report.image_url}
-                              alt={categoryLabel(locale, report.category)}
-                              fill
-                              sizes="96px"
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-lg bg-civic-bg">
-                            <MapPinned className="h-6 w-6 text-civic-muted" aria-hidden="true" />
-                          </div>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className={FOOD_CATEGORIES[report.category].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
-                              {categoryLabel(locale, report.category)}
-                            </span>
-                          </div>
-                          <h2 className="mt-2 line-clamp-2 font-black leading-tight text-civic-text">
-                            {report.title || titleFromLocation(report.area, report.district)}
-                          </h2>
-                          <p className="mt-1 text-sm text-civic-muted">{titleFromLocation(report.area, report.district)}</p>
-                          <p className="mt-1 line-clamp-2 text-sm leading-5 text-civic-muted">{report.menu_text || report.description || t.map.verifiedReportFallback}</p>
-                          <div className="mt-3 flex flex-col gap-2">
-                            <span className="text-xs text-civic-muted">{report.price_range || formatDate(report.created_at)}</span>
-                            <div className="grid grid-cols-2 gap-2">
-                              {report.vendor_phone ? (
-                                <Button href={telHref(report.vendor_phone)} size="sm" variant="secondary">
-                                  <Phone className="h-4 w-4" aria-hidden="true" />
-                                  Call
-                                </Button>
-                              ) : null}
-                              <Button href={`/reports/${report.id}`} size="sm" className={report.vendor_phone ? "" : "col-span-2"}>
-                                View
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                <div className="hidden overflow-x-auto md:block">
-                  <table className="min-w-[920px] divide-y divide-civic-line text-sm">
-                    <thead className="bg-civic-bg text-left text-xs font-bold text-civic-muted">
-                      <tr>
-                        <th className="px-4 py-3">Vendor</th>
-                        <th className="px-4 py-3">Cuisine</th>
-                        <th className="px-4 py-3">Location</th>
-                        <th className="px-4 py-3">Menu preview</th>
-                        <th className="px-4 py-3">Hours</th>
-                        <th className="px-4 py-3">Contact</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-civic-line bg-white">
-                      {reports.map((report) => (
-                        <tr key={report.id} className="align-top hover:bg-civic-bg/60">
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              {report.image_url ? (
-                                <div className="relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-civic-bg">
-                                  <Image
-                                    src={report.image_url}
-                                    alt={categoryLabel(locale, report.category)}
-                                    fill
-                                    sizes="64px"
-                                    className="object-cover"
-                                  />
-                                </div>
-                              ) : null}
-                              <div className="min-w-0">
-                                <p className="max-w-52 truncate font-black text-civic-text">{report.title || "Unnamed spot"}</p>
-                                <p className="text-xs text-civic-muted">{report.price_range || "Price not added"}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={FOOD_CATEGORIES[report.category].badge + " inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold"}>
-                              {categoryLabel(locale, report.category)}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-civic-muted">{titleFromLocation(report.area, report.district)}</td>
-                          <td className="max-w-xs px-4 py-3 text-civic-muted">
-                            <p className="line-clamp-2">{report.menu_text || report.description || t.map.verifiedReportFallback}</p>
-                          </td>
-                          <td className="px-4 py-3 text-civic-muted">{report.hours_text || "Ask vendor"}</td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-wrap gap-2">
-                              {report.vendor_phone ? (
-                                <Button href={telHref(report.vendor_phone)} size="sm" variant="secondary">
-                                  <Phone className="h-4 w-4" aria-hidden="true" />
-                                  Call
-                                </Button>
-                              ) : null}
-                              <Button href={`/reports/${report.id}`} size="sm">
-                                <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                                View
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
+              <VendorListView reports={reports} locale={locale} />
             )}
 
             {reports.length === 0 ? (
