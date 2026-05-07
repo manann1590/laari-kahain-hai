@@ -2,24 +2,20 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  CalendarDays,
   CheckCircle2,
   ClipboardCopy,
   ExternalLink,
   MessageCircle,
   Phone,
   ShieldCheck,
-  Workflow,
 } from "lucide-react";
 import { FOOD_CATEGORIES } from "@/lib/constants";
 import { getRequestLocale } from "@/lib/i18n-server";
 import { getCopy, categoryLabel } from "@/lib/i18n";
 import { appConfig } from "@/lib/config";
 import { getPublicReportById } from "@/lib/data/reports";
-import { formatDateTime, timeAgo, titleFromLocation } from "@/lib/utils";
+import { titleFromLocation } from "@/lib/utils";
 import { googleMapsLink } from "@/lib/geo";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { ReportEvent } from "@/lib/supabase/types";
 import { PageShell } from "@/components/layout/PageShell";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -30,15 +26,6 @@ import { PublicMapLoader } from "@/components/map/PublicMapLoader";
 
 export const revalidate = 300;
 
-async function getPublicReportEvents(reportId: string): Promise<ReportEvent[]> {
-  const client = createServerSupabaseClient();
-  const { data } = await client
-    .from("vendor_events")
-    .select("*")
-    .eq("vendor_id", reportId)
-    .order("created_at", { ascending: true });
-  return (data || []) as ReportEvent[];
-}
 
 export async function generateMetadata({
   params,
@@ -67,10 +54,7 @@ export default async function ReportDetailPage({
   const resolvedSearchParams = await searchParams;
   const justSubmitted = resolvedSearchParams.submitted === "1";
 
-  const [report, events] = await Promise.all([
-    getPublicReportById(id).catch(() => null),
-    getPublicReportEvents(id).catch(() => [] as ReportEvent[]),
-  ]);
+  const report = await getPublicReportById(id).catch(() => null);
 
   if (!report) notFound();
 
@@ -120,15 +104,6 @@ export default async function ReportDetailPage({
         </Card>
       ) : null}
 
-      {report.tracking_id ? (
-        <div className="mb-6 flex min-w-0 items-center gap-3 rounded-lg border border-civic-line bg-white px-4 py-3 shadow-sm">
-          <ClipboardCopy className="h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-black uppercase tracking-normal text-civic-muted">{t.common.trackingId}</p>
-            <p className="mt-0.5 break-all font-mono text-base font-black text-civic-text">{report.tracking_id}</p>
-          </div>
-        </div>
-      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="order-2 space-y-6 lg:order-1">
@@ -204,70 +179,26 @@ export default async function ReportDetailPage({
           </Card>
 
           <Card title="Contact vendor">
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-wrap gap-2">
               {vendorTel ? (
-                <Button href={vendorTel} className="w-full">
+                <Button href={vendorTel}>
                   <Phone className="h-4 w-4" aria-hidden="true" />
-                  Call {report.vendor_phone}
+                  Call
                 </Button>
               ) : null}
               {vendorWhatsappUrl ? (
-                <Button href={vendorWhatsappUrl} variant="success" className="w-full">
+                <Button href={vendorWhatsappUrl} variant="success">
                   <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                  WhatsApp vendor
+                  WhatsApp
                 </Button>
               ) : null}
-              <Button href={googleMapsLink(report.latitude, report.longitude)} variant="secondary" className="w-full">
+              <Button href={googleMapsLink(report.latitude, report.longitude)} variant="secondary">
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
-                Get directions
+                Directions
               </Button>
             </div>
           </Card>
 
-          <Card title={t.common.timeline}>
-            <ol className="space-y-4 text-sm">
-              <li className="flex gap-3">
-                <CalendarDays className="mt-0.5 h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
-                <div>
-                  <p className="font-black text-civic-text">{t.reportDetail.submitted}</p>
-                  <p className="text-civic-muted">{formatDateTime(report.created_at)}</p>
-                </div>
-              </li>
-              {events.map((event) => (
-                <li key={event.id} className="flex gap-3">
-                  <Workflow className="mt-0.5 h-5 w-5 shrink-0 text-civic-orange" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-black capitalize text-civic-text">
-                      {event.event_type.replace(/_/g, " ")}
-                    </p>
-                    {event.note ? (
-                      <p className="mt-0.5 text-civic-muted">{event.note}</p>
-                    ) : null}
-                    {event.proof_image_url ? (
-                      <div className="mt-2 overflow-hidden rounded-lg border border-civic-line">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={event.proof_image_url}
-                          alt={t.reportDetail.proofImage}
-                          className="h-32 w-full object-cover"
-                        />
-                      </div>
-                    ) : null}
-                    <p className="mt-1 text-xs text-civic-muted">{timeAgo(event.created_at)}</p>
-                  </div>
-                </li>
-              ))}
-              {report.approved_at ? (
-                <li className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-civic-leaf" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-civic-text">{t.reportDetail.verified}</p>
-                    <p className="text-civic-muted">{formatDateTime(report.approved_at)}</p>
-                  </div>
-                </li>
-              ) : null}
-            </ol>
-          </Card>
 
           <Card title={t.common.privacyNote} variant="success">
             <p className="flex gap-3 text-sm leading-6 text-civic-muted">
