@@ -5,5 +5,5 @@ import { Badge } from "@/components/ui/Badge";
 
 export function ReportStatusBadge({ status, locale = "en" }: { status: ReportStatus; locale?: Locale }) {
   const value = STATUS_LABELS[status] ?? STATUS_LABELS.pending;
-  return <Badge className={value.badge}>{getCopy(locale).status[status] ?? getCopy(locale).status.pending}</Badge>;
+  return <Badge className={value.badge} role="status" aria-label={`Status: ${getCopy(locale).status[status] ?? getCopy(locale).status.pending}`}>{getCopy(locale).status[status] ?? getCopy(locale).status.pending}</Badge>;
 }

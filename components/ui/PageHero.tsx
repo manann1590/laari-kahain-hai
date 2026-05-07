@@ -25,7 +25,7 @@ export function PageHero({
       <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:py-16">
         <div className="flex flex-col justify-center">
           {eyebrow ? (
-            <p className="mb-4 inline-flex w-fit rounded-md border border-civic-teal/30 bg-civic-teal/10 px-3 py-1 text-xs font-black uppercase tracking-normal text-civic-teal shadow-sm">
+            <p className="mb-4 inline-flex w-fit rounded-md border border-civic-teal/30 bg-civic-teal/10 px-3 py-1 text-xs font-bold uppercase tracking-normal text-civic-teal shadow-sm">
               {eyebrow}
             </p>
           ) : null}
