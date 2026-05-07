@@ -64,6 +64,7 @@ function statValue(value?: number | null, empty = "—") {
   return value && value > 0 ? value : empty;
 }
 
+// TODO: Replace with live counts from database — hardcoded stats erode trust
 const liveRows = [
   ["Satellite", "Cheese vada pav", "5 min"],
   ["Vastrapur", "Mini thali", "12 min"],
@@ -138,16 +139,16 @@ export default async function HomePage() {
               </h1>
 
               <p className="mt-5 max-w-lg text-base leading-7 text-white/85 sm:text-lg">
-                Find Ahmedabad&apos;s street food vendors before they move&nbsp;— menu, photo,
-                phone, and live location in one tap.
+                Ahmedabad&apos;s streets, mapped. Find verified food carts and stalls&nbsp;— by craving,
+                area, or what&apos;s open right now.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button href="/map" size="lg" className="bg-white text-civic-orange font-black shadow-soft hover:bg-white/90 border-transparent focus:ring-white">
+                <Button href="/map" variant="primary" size="lg" className="bg-white text-civic-orange font-black shadow-soft hover:bg-white/90 border-transparent focus:ring-white">
                   <MapPinned className="h-4 w-4" aria-hidden="true" />
                   Open Food Map
                 </Button>
-                <Button href="/reports/new" variant="ghost" size="lg" className="border border-white/40 bg-white/20 text-white backdrop-blur-sm hover:bg-white/30">
+                <Button href="/reports/new" variant="outline" size="lg" className="border border-white/40 bg-white/20 text-white backdrop-blur-sm hover:bg-white/30">
                   <Camera className="h-4 w-4" aria-hidden="true" />
                   List Your Spot
                 </Button>
@@ -156,9 +157,9 @@ export default async function HomePage() {
               {/* Trust signals */}
               <div className="mt-8 flex flex-wrap gap-5">
                 {[
-                  { icon: CheckCircle2, label: "Admin-verified listings" },
-                  { icon: ShieldCheck,  label: "No signup required" },
-                  { icon: Phone,        label: "Direct vendor contact" },
+                  { icon: CheckCircle2, label: "Verified before publishing" },
+                  { icon: Phone,        label: "Call or WhatsApp directly" },
+                  { icon: MapPin,       label: "Built for Ahmedabad lanes" },
                 ].map(({ icon: Icon, label }) => (
                   <div key={label} className="flex items-center gap-1.5 text-sm text-white/80">
                     <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
