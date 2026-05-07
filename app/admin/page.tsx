@@ -72,27 +72,52 @@ export default async function AdminDashboardPage({
         <EmptyState title="Admin data is not available" description={errorMessage} />
       ) : (
         <div className="space-y-6">
-          <StatsCards stats={data.stats} />
-          {data.stats.pending > 0 ? (
-            <div className="rounded-lg border border-civic-amber/35 bg-civic-amber/10 p-5 shadow-sm">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex gap-3">
-                  <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-civic-amber" aria-hidden="true" />
-                  <div>
-                    <p className="font-black text-white">{data.stats.pending} listings need review</p>
-                    <p className="mt-1 text-sm leading-6 text-civic-amber">
-                      Pending vendor listings are hidden publicly until moderation is complete.
-                    </p>
-                  </div>
-                </div>
-                <Button href="/admin?status=pending" variant="secondary" className="w-full sm:w-auto">
-                  View pending
-                </Button>
-              </div>
+          <StatsCards stats={data.stats} filterBaseUrl="/admin" />
+
+          {/* ── Partner Requests ────────────────────────────────── */}
+          <div>
+            <h2 className="text-lg font-bold text-civic-text">Partner Requests</h2>
+            <p className="mt-1 text-sm text-civic-muted">
+              Businesses applying to list their vendors on FoodRadar. Approve requests to onboard new partners.
+            </p>
+            <div className="mt-4 rounded-lg border border-civic-line bg-civic-soft/85 p-5 text-sm text-civic-muted">
+              No partner requests yet. Partner applications will appear here once the feature is live.
             </div>
-          ) : null}
-          <AdminFilters status={status} category={category} search={search} />
-          <AdminReportTable reports={data.reports} />
+          </div>
+
+          <hr className="border-t border-civic-line" />
+
+          {/* ── Vendor Listings ─────────────────────────────────── */}
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-civic-text">Vendor Listings</h2>
+              <p className="mt-1 text-sm text-civic-muted">
+                Individual food-spot submissions awaiting moderation. Approve only clear, location-backed listings.
+              </p>
+            </div>
+
+            {data.stats.pending > 0 ? (
+              <div className="rounded-lg border border-civic-amber/35 bg-civic-amber/10 p-5 shadow-sm">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex gap-3">
+                    <AlertTriangle className="mt-1 h-6 w-6 shrink-0 text-civic-amber" aria-hidden="true" />
+                    <div>
+                      <p className="font-black text-white">{data.stats.pending} listings need review</p>
+                      <p className="mt-1 text-sm leading-6 text-civic-amber">
+                        Pending vendor listings are hidden publicly until moderation is complete.
+                      </p>
+                    </div>
+                  </div>
+                  <Button href="/admin?status=pending" variant="secondary" className="w-full sm:w-auto">
+                    View pending
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+
+            <AdminFilters status={status} category={category} search={search} />
+            <AdminReportTable reports={data.reports} />
+          </div>
         </div>
       )}
     </PageShell>

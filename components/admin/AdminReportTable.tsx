@@ -102,7 +102,7 @@ export function AdminReportTable({ reports }: { reports: Report[] }) {
               <th className="px-4 py-3">Area/District</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Priority</th>
+              <th className="px-4 py-3">Severity</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
