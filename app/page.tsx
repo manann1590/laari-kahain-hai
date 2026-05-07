@@ -85,6 +85,8 @@ function statValue(value?: number | null, empty = "Ready") {
   return value && value > 0 ? value : empty;
 }
 
+// TODO: Replace with live counts from database — hardcoded stats erode trust
+
 export default async function HomePage() {
   const locale = await getRequestLocale();
   const stats = await loadStats();
