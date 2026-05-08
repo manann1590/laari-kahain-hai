@@ -29,6 +29,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { PublicMapLoader } from "@/components/map/PublicMapLoader";
 import { Card } from "@/components/ui/Card";
 import { VendorListView } from "@/components/map/VendorListView";
+import { NearbyFoodFinder } from "@/components/map/NearbyFoodFinder";
 
 export const metadata: Metadata = {
   title: "Food Map",
@@ -135,15 +136,30 @@ export default async function MapPage({
   const area = params.area?.trim();
   const search = (params.search || params.q || "").trim();
   let reports: Awaited<ReturnType<typeof getPublicReports>> = [];
+  let nearbyReports: Awaited<ReturnType<typeof getPublicReports>> = [];
   let errorMessage = "";
 
   try {
-    reports = await getPublicReports({
-      category: category || "all",
-      district,
-      area,
-      search,
-    });
+    const hasUrlFilters = Boolean(category || district || area || search);
+    if (hasUrlFilters) {
+      [reports, nearbyReports] = await Promise.all([
+        getPublicReports({
+          category: category || "all",
+          district,
+          area,
+          search,
+        }),
+        getPublicReports(),
+      ]);
+    } else {
+      reports = await getPublicReports({
+        category: category || "all",
+        district,
+        area,
+        search,
+      });
+      nearbyReports = reports;
+    }
   } catch (error) {
     errorMessage = error instanceof Error ? error.message : "Could not load vendor listings.";
   }
@@ -281,6 +297,8 @@ export default async function MapPage({
         </aside>
 
         <div className="order-1 min-w-0 space-y-5 xl:order-2">
+          <NearbyFoodFinder reports={nearbyReports} locale={locale} />
+
           <Card variant="elevated" className="p-3">
             <PublicMapLoader reports={reports} locale={locale} />
           </Card>
