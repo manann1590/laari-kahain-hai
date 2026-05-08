@@ -41,8 +41,8 @@ function EmptyMapPreview({
           <p className="mt-2 text-sm leading-6 text-civic-muted">
             {t.map.noReportsCopy}
           </p>
-          <Button href="/reports/new" className="mt-5 w-full sm:w-auto">
-            {t.map.submitFirst}
+          <Button href="/partner/login" className="mt-5 w-full sm:w-auto">
+            List your spot
           </Button>
         </div>
       </div>

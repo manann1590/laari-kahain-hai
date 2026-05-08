@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import { CheckCircle2, Clock3, LogOut, MapPinned, ShieldCheck } from "lucide-react";
-import { createPartnerListingAction, logoutPartnerAction } from "@/app/partner/actions";
+import { AlertTriangle, CheckCircle2, Clock3, LogOut, ShieldCheck } from "lucide-react";
+import {
+  createPartnerListingAction,
+  logoutPartnerAction,
+  updatePartnerListingAction,
+} from "@/app/partner/actions";
 import { getPartnerReports } from "@/lib/data/reports";
 import { requirePartner } from "@/lib/data/partners";
 import { formatDate, titleFromLocation } from "@/lib/utils";
 import { PageShell } from "@/components/layout/PageShell";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { PublicReportForm } from "@/components/reports/PublicReportForm";
 import { CategoryBadge } from "@/components/reports/CategoryBadge";
 import { ReportStatusBadge } from "@/components/reports/ReportStatusBadge";
@@ -23,10 +26,78 @@ export default async function PartnerDashboardPage({
 }) {
   const partner = await requirePartner();
   const params = await searchParams;
+  const requested = params.requested === "1";
   const submitted = params.submitted === "1";
   const setup = params.setup === "1";
+  const updated = params.updated === "1";
+  const isActive = partner.status === "active";
+
+  if (!isActive) {
+    const rejected = partner.status === "rejected";
+    return (
+      <PageShell
+        eyebrow="Vendor access"
+        title={rejected ? "Admin could not approve this request yet" : "Admin approval pending"}
+        description={
+          rejected
+            ? "Your vendor access request needs an admin review update before you can list a food spot."
+            : "You are logged in. Admin will approve your vendor account, then this dashboard will unlock your menu, contact, photo, and location tools."
+        }
+        actions={
+          <form action={logoutPartnerAction} className="w-full sm:w-auto">
+            <Button type="submit" variant="secondary" className="w-full sm:w-auto">
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              Logout
+            </Button>
+          </form>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card variant={rejected ? "warning" : "elevated"} title={partner.business_name}>
+            <div className="flex items-center gap-2 text-sm font-black text-civic-text">
+              {rejected ? (
+                <AlertTriangle className="h-4 w-4 text-civic-amber" aria-hidden="true" />
+              ) : (
+                <Clock3 className="h-4 w-4 text-civic-amber" aria-hidden="true" />
+              )}
+              {rejected ? "Needs admin attention" : "Waiting for admin approval"}
+            </div>
+            <p className="mt-2 text-sm leading-6 text-civic-muted">
+              {rejected
+                ? partner.rejection_note || "Admin has not added a public rejection note."
+                : "Keep this login. Once admin approves, you can add or update your listing from here."}
+            </p>
+          </Card>
+          <Card title="Login saved">
+            <p className="font-black text-civic-text">Mobile + password</p>
+            <p className="mt-2 text-sm leading-6 text-civic-muted">
+              You will use the same login after approval. No header link is needed.
+            </p>
+          </Card>
+          <Card title="Unlocked after approval">
+            <p className="font-black text-civic-text">Menu, location, contacts, photos</p>
+            <p className="mt-2 text-sm leading-6 text-civic-muted">
+              Add WhatsApp, phone, website, food photos, and your current spot location.
+            </p>
+          </Card>
+        </div>
+        {requested ? (
+          <Card variant="success" className="mt-5">
+            <div className="flex gap-3">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-civic-leaf" aria-hidden="true" />
+              <p className="text-sm leading-6 text-civic-text">
+                Request created. You are in the vendor waiting room now.
+              </p>
+            </div>
+          </Card>
+        ) : null}
+      </PageShell>
+    );
+  }
+
   const reports = await getPartnerReports(partner.id);
   const hasListing = reports.length > 0;
+  const primaryReport = reports[0];
 
   return (
     <PageShell
@@ -53,12 +124,14 @@ export default async function PartnerDashboardPage({
             </div>
           </Card>
         ) : null}
-        {submitted ? (
+        {submitted || updated ? (
           <Card variant="success">
             <div className="flex gap-3">
               <Clock3 className="mt-0.5 h-5 w-5 shrink-0 text-civic-amber" aria-hidden="true" />
               <p className="text-sm leading-6 text-civic-text">
-                Listing submitted. It is pending admin review and will appear publicly after approval.
+                {updated
+                  ? "Listing updated. It is pending admin review before the public map changes."
+                  : "Listing submitted. It is pending admin review and will appear publicly after approval."}
               </p>
             </div>
           </Card>
@@ -112,23 +185,34 @@ export default async function PartnerDashboardPage({
             </div>
           </Card>
         ) : (
-          <Card
-            variant="elevated"
-            title="List your food spot"
-            description="Add your menu, phone, camera photo, and exact location. The admin team reviews it before publishing."
-          >
+          <section className="space-y-4">
+            <div className="max-w-3xl">
+              <h2 className="text-xl font-black text-civic-text">List your food spot</h2>
+              <p className="mt-2 text-sm leading-7 text-civic-muted">
+                Add your menu, phone, camera photo, website, and exact location. The admin team reviews it before publishing.
+              </p>
+            </div>
             <PublicReportForm action={createPartnerListingAction} locale="en" />
-          </Card>
+          </section>
         )}
 
-        {!hasListing ? null : (
-          <EmptyState
-            icon={MapPinned}
-            title="Need to change listing details?"
-            description="For this v1, submit changes through admin support so the public map stays reviewed and consistent."
-            action={<Button href="/partner">Partner support</Button>}
-          />
-        )}
+        {primaryReport ? (
+          <section className="space-y-4">
+            <div className="max-w-3xl">
+              <h2 className="text-xl font-black text-civic-text">Edit your listing</h2>
+              <p className="mt-2 text-sm leading-7 text-civic-muted">
+                Change your menu, location, phone, WhatsApp, website, or photo. Saved edits go back to admin review before public visibility changes.
+              </p>
+            </div>
+            <PublicReportForm
+              action={updatePartnerListingAction.bind(null, primaryReport.id)}
+              locale="en"
+              initialReport={primaryReport}
+              requirePhoto={false}
+              submitLabel="Save for admin review"
+            />
+          </section>
+        ) : null}
       </div>
     </PageShell>
   );

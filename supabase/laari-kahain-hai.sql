@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.vendors (
   menu_text                TEXT,
   vendor_phone             TEXT,
   vendor_whatsapp          TEXT,
+  vendor_website           TEXT,
   cuisine_tags             TEXT,
   price_range              TEXT,
   hours_text               TEXT,
@@ -266,6 +267,7 @@ CREATE POLICY "Public read vendor images"
 
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS menu_image_url  TEXT;
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS menu_image_path TEXT;
+ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS vendor_website  TEXT;
 ALTER TABLE public.vendors ADD COLUMN IF NOT EXISTS partner_id UUID REFERENCES public.partner_accounts(id);
 CREATE INDEX IF NOT EXISTS vendors_partner_id_idx ON public.vendors(partner_id);
 

@@ -138,6 +138,7 @@ export function AdminReportForm({
         <Input label="Vendor name" name="title" defaultValue={report?.title || ""} placeholder="Raju Bhai Cheese Vada Pav" />
         <Input label="Public phone" name="vendor_phone" type="tel" defaultValue={report?.vendor_phone || ""} />
         <Input label="WhatsApp" name="vendor_whatsapp" type="tel" defaultValue={report?.vendor_whatsapp || ""} />
+        <Input label="Website" name="vendor_website" type="url" defaultValue={report?.vendor_website || ""} placeholder="https://example.com" />
         <Input label="Hours" name="hours_text" defaultValue={report?.hours_text || ""} placeholder="6 PM - 11 PM" />
         <Input label="Price range" name="price_range" defaultValue={report?.price_range || ""} placeholder="₹50-₹180" />
         <Input label="Search tags" name="cuisine_tags" defaultValue={report?.cuisine_tags || ""} placeholder="veg, spicy, late night" />

@@ -1,22 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MapPinned, Camera, ShieldCheck } from "lucide-react";
+import { MapPinned } from "lucide-react";
 import { getCopy, type Locale } from "@/lib/i18n";
 
 export function Footer({ locale }: { locale: Locale }) {
   const t = getCopy(locale);
 
   const links = [
-    { href: "/reports/new", label: t.common.submit, icon: Camera },
     { href: "/map", label: t.common.publicMap, icon: MapPinned },
-    { href: "/admin", label: t.common.admin, icon: ShieldCheck },
   ];
 
   return (
     <footer className="border-t border-civic-line bg-civic-brown text-white">
       <div className="h-1 ticket-edge" aria-hidden="true" />
 
-      <div className="mx-auto max-w-7xl min-w-0 px-4 pb-24 pt-8 sm:px-6 md:pb-8 lg:px-8">
+      <div className="mx-auto max-w-7xl min-w-0 px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-col gap-8 md:flex-row md:items-start md:justify-between">
 
           {/* Brand */}

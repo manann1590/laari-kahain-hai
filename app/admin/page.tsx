@@ -81,6 +81,22 @@ export default async function AdminDashboardPage({
         <EmptyState title="Admin data is not available" description={errorMessage} />
       ) : (
         <div className="space-y-6">
+          {params.partnerApproved && !params.setup ? (
+            <Card variant="success">
+              <div className="flex gap-3">
+                <Check className="mt-0.5 h-5 w-5 shrink-0 text-civic-leaf" aria-hidden="true" />
+                <div>
+                  <p className="font-black text-civic-text">
+                    Partner approved: {params.partnerApproved}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-civic-muted">
+                    Their existing mobile and password login is now active. They can add or update listing details from the vendor dashboard.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : null}
+
           {params.setup ? (
             <Card variant="success">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -26,6 +26,15 @@ import { PublicMapLoader } from "@/components/map/PublicMapLoader";
 
 export const revalidate = 300;
 
+function safeExternalUrl(value?: string | null) {
+  if (!value) return "";
+  try {
+    const url = new URL(value.startsWith("http") ? value : `https://${value}`);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : "";
+  } catch {
+    return "";
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -63,6 +72,7 @@ export default async function ReportDetailPage({
   const vendorTel = report.vendor_phone ? `tel:${report.vendor_phone.replace(/[^\d+]/g, "")}` : "";
   const vendorWhatsappDigits = (report.vendor_whatsapp || report.vendor_phone || "").replace(/\D/g, "");
   const vendorWhatsappUrl = vendorWhatsappDigits ? `https://wa.me/${vendorWhatsappDigits}` : "";
+  const vendorWebsiteUrl = safeExternalUrl(report.vendor_website);
 
   return (
     <PageShell
@@ -81,6 +91,12 @@ export default async function ReportDetailPage({
             <Button href={vendorWhatsappUrl} variant="success" className="w-full sm:w-auto">
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
               WhatsApp vendor
+            </Button>
+          ) : null}
+          {vendorWebsiteUrl ? (
+            <Button href={vendorWebsiteUrl} variant="outline" className="w-full sm:w-auto">
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+              Website
             </Button>
           ) : null}
           <Button href={googleMapsLink(report.latitude, report.longitude)} variant="secondary" className="w-full sm:w-auto">
@@ -130,6 +146,14 @@ export default async function ReportDetailPage({
                 <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Tags</p>
                 <p className="mt-2 font-black text-civic-text">{report.cuisine_tags || categoryLabel(locale, report.category)}</p>
               </div>
+              {vendorWebsiteUrl ? (
+                <div className="rounded-lg border border-civic-line bg-civic-bg p-4">
+                  <p className="text-xs font-black uppercase tracking-normal text-civic-muted">Website</p>
+                  <a href={vendorWebsiteUrl} target="_blank" rel="noopener noreferrer" className="mt-2 block truncate font-black text-civic-orange">
+                    {report.vendor_website}
+                  </a>
+                </div>
+              ) : null}
               <div className="rounded-lg border border-green-200 bg-green-50 p-4">
                 <p className="text-xs font-black uppercase tracking-normal text-green-800">Trust</p>
                 <p className="mt-2 font-black text-green-950">Verified listing</p>
@@ -192,6 +216,12 @@ export default async function ReportDetailPage({
                   WhatsApp
                 </Button>
               ) : null}
+              {vendorWebsiteUrl ? (
+                <Button href={vendorWebsiteUrl} variant="outline">
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  Website
+                </Button>
+              ) : null}
               <Button href={googleMapsLink(report.latitude, report.longitude)} variant="secondary">
                 <ExternalLink className="h-4 w-4" aria-hidden="true" />
                 Directions
@@ -251,7 +281,7 @@ export default async function ReportDetailPage({
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-civic-line bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
         <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${vendorTel && vendorWhatsappUrl ? 3 : vendorTel || vendorWhatsappUrl ? 2 : 1}, minmax(0, 1fr))` }}>
           {vendorTel ? (
             <Button href={vendorTel} size="sm">

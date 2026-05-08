@@ -21,9 +21,9 @@ export default function NewPublicReportPage() {
         <EmptyState
           icon={LockKeyhole}
           title="Listing is partner-gated"
-          description="To keep the map trustworthy, FoodRadar no longer accepts open public listing submissions. Request partner access first, then submit your place from /partner."
-          action={<Button href="/partner">Request partner access</Button>}
-          secondaryAction={<Button href="/partner/login" variant="secondary">Partner login</Button>}
+          description="To keep the map trustworthy, FoodRadar no longer accepts open public listing submissions. Vendors log in with mobile and password, then admin approval unlocks listing tools."
+          action={<Button href="/partner/login">Vendor login</Button>}
+          secondaryAction={<Button href="/map" variant="secondary">Explore food map</Button>}
         />
 
         <div className="grid gap-4">

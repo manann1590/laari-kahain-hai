@@ -31,9 +31,9 @@ export default async function RootLayout({
   const locale = await getRequestLocale();
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body>
-        <AppShell locale={locale}>{children}</AppShell>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

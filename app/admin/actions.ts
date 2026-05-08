@@ -107,6 +107,7 @@ function reportInputFromForm(formData: FormData) {
     city: safeString(formData.get("city")),
     image_url: safeString(formData.get("image_url")),
     severity: safeString(formData.get("severity")) as Severity,
+    vendor_website: safeString(formData.get("vendor_website")),
     reporter_phone_hash: safeString(formData.get("reporter_phone_hash")),
     admin_notes: safeString(formData.get("admin_notes")),
   };
@@ -174,8 +175,11 @@ export async function approvePartnerRequestAction(id: string) {
   await requireAdmin();
   const { partner, token } = await approvePartnerRequest(id);
   revalidatePath("/admin");
-  const setupUrl = `/partner/setup?token=${encodeURIComponent(token)}`;
-  redirect(`/admin?partnerApproved=${encodeURIComponent(partner.business_name)}&setup=${encodeURIComponent(setupUrl)}`);
+  if (token) {
+    const setupUrl = `/partner/setup?token=${encodeURIComponent(token)}`;
+    redirect(`/admin?partnerApproved=${encodeURIComponent(partner.business_name)}&setup=${encodeURIComponent(setupUrl)}`);
+  }
+  redirect(`/admin?partnerApproved=${encodeURIComponent(partner.business_name)}&active=1`);
 }
 
 export async function rejectPartnerRequestAction(id: string, formData: FormData) {

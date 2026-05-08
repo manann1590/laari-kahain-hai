@@ -96,7 +96,7 @@ async function uploadPublicMenuFile(formData: FormData): Promise<{
 export async function submitPublicReportAction(formData: FormData) {
   throw new Error("FoodRadar listings can only be submitted from an approved partner account.");
 
-  if (safeString(formData.get("website"))) {
+  if (safeString(formData.get("company_website"))) {
     throw new Error("Submission rejected.");
   }
 
@@ -114,6 +114,7 @@ export async function submitPublicReportAction(formData: FormData) {
     menu_text: safeString(formData.get("menu_text")) || safeString(formData.get("description")),
     vendor_phone: safeString(formData.get("vendor_phone")),
     vendor_whatsapp: safeString(formData.get("vendor_whatsapp")) || safeString(formData.get("vendor_phone")),
+    vendor_website: safeString(formData.get("vendor_website")),
     cuisine_tags: safeString(formData.get("cuisine_tags")),
     price_range: safeString(formData.get("price_range")),
     hours_text: safeString(formData.get("hours_text")),

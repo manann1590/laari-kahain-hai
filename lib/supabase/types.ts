@@ -66,6 +66,7 @@ export type Report = {
   image_path: string | null;
   vendor_phone: string | null;
   vendor_whatsapp: string | null;
+  vendor_website: string | null;
   menu_text: string | null;
   menu_image_url: string | null;
   menu_image_path: string | null;
@@ -108,6 +109,7 @@ export type PublicReport = Pick<
   | "image_path"
   | "vendor_phone"
   | "vendor_whatsapp"
+  | "vendor_website"
   | "menu_text"
   | "menu_image_url"
   | "menu_image_path"

@@ -19,11 +19,11 @@ import {
   clearPartnerCookie,
   createPartnerRequest,
   getSafePartnerRedirectPath,
-  requirePartner,
+  requireActivePartner,
   setPartnerCookie,
   verifyPartnerLogin,
 } from "@/lib/data/partners";
-import { createPartnerReport } from "@/lib/data/reports";
+import { createPartnerReport, updatePartnerReport } from "@/lib/data/reports";
 import { createAdminSupabaseClient } from "@/lib/supabase/server";
 import type { FoodCategory, ReportInsert } from "@/lib/supabase/types";
 import { reportCreateSchema } from "@/lib/validators/report";
@@ -96,17 +96,23 @@ async function uploadMenuFile(formData: FormData): Promise<{
 }
 
 export async function requestPartnerAction(formData: FormData) {
-  await createPartnerRequest({
+  const password = safeString(formData.get("password")) || "";
+  const confirmPassword = safeString(formData.get("confirm_password")) || "";
+  if (password !== confirmPassword) throw new Error("Passwords do not match.");
+
+  const partner = await createPartnerRequest({
     businessName: safeString(formData.get("business_name")) || "",
     ownerName: safeString(formData.get("owner_name")),
     mobile: safeString(formData.get("mobile")) || "",
+    password,
     whatsapp: safeString(formData.get("whatsapp")),
     area: safeString(formData.get("area")),
     district: safeString(formData.get("district")),
     addressText: safeString(formData.get("address_text")),
   });
 
-  redirect("/partner?requested=1");
+  await setPartnerCookie(partner.id);
+  redirect("/partner/dashboard?requested=1");
 }
 
 export async function setupPartnerAction(formData: FormData) {
@@ -128,10 +134,15 @@ export async function setupPartnerAction(formData: FormData) {
 
 export async function loginPartnerAction(formData: FormData) {
   const next = getSafePartnerRedirectPath(safeString(formData.get("next")));
-  const partner = await verifyPartnerLogin(
-    safeString(formData.get("mobile")) || "",
-    safeString(formData.get("password")) || "",
-  );
+  let partner: Awaited<ReturnType<typeof verifyPartnerLogin>> | null = null;
+  try {
+    partner = await verifyPartnerLogin(
+      safeString(formData.get("mobile")) || "",
+      safeString(formData.get("password")) || "",
+    );
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.includes("valid mobile")) throw error;
+  }
 
   if (!partner) {
     const loginUrl = new URL("/partner/login", "https://foodradar.local");
@@ -149,20 +160,15 @@ export async function logoutPartnerAction() {
   redirect("/partner/login");
 }
 
-export async function createPartnerListingAction(formData: FormData) {
-  const partner = await requirePartner();
-
-  if (safeString(formData.get("website"))) {
-    throw new Error("Submission rejected.");
-  }
-
-  const input = {
+function partnerListingInputFromForm(formData: FormData, partnerId: string) {
+  return {
     category: safeString(formData.get("category")) as FoodCategory,
     title: safeString(formData.get("title")),
     description: safeString(formData.get("description")),
     menu_text: safeString(formData.get("menu_text")) || safeString(formData.get("description")),
     vendor_phone: safeString(formData.get("vendor_phone")),
     vendor_whatsapp: safeString(formData.get("vendor_whatsapp")) || safeString(formData.get("vendor_phone")),
+    vendor_website: safeString(formData.get("vendor_website")),
     cuisine_tags: safeString(formData.get("cuisine_tags")),
     price_range: safeString(formData.get("price_range")),
     hours_text: safeString(formData.get("hours_text")),
@@ -173,8 +179,18 @@ export async function createPartnerListingAction(formData: FormData) {
     district: safeString(formData.get("district")),
     city: safeString(formData.get("city")),
     severity: "medium",
-    partner_id: partner.id,
+    partner_id: partnerId,
   } as ReportInsert;
+}
+
+export async function createPartnerListingAction(formData: FormData) {
+  const partner = await requireActivePartner();
+
+  if (safeString(formData.get("company_website"))) {
+    throw new Error("Submission rejected.");
+  }
+
+  const input = partnerListingInputFromForm(formData, partner.id);
 
   reportCreateSchema.parse(input);
 
@@ -196,4 +212,39 @@ export async function createPartnerListingAction(formData: FormData) {
   revalidatePath("/admin");
   revalidatePath("/partner/dashboard");
   redirect("/partner/dashboard?submitted=1");
+}
+
+export async function updatePartnerListingAction(reportId: string, formData: FormData) {
+  const partner = await requireActivePartner();
+
+  if (safeString(formData.get("company_website"))) {
+    throw new Error("Submission rejected.");
+  }
+
+  const [uploaded, menuUploaded] = await Promise.all([
+    uploadImage(formData),
+    uploadMenuFile(formData),
+  ]);
+
+  const imageFields = uploaded.hasImage
+    ? {
+        image_path: uploaded.image_path,
+        image_url: uploaded.image_url,
+        stall_photo_url: uploaded.image_url,
+        stall_photo_path: uploaded.image_path,
+      }
+    : {};
+
+  await updatePartnerReport(partner.id, reportId, {
+    ...partnerListingInputFromForm(formData, partner.id),
+    ...imageFields,
+    ...menuUploaded,
+    verification_level: "medium",
+  } as ReportInsert);
+
+  revalidatePath("/admin");
+  revalidatePath("/partner/dashboard");
+  revalidatePath("/map");
+  revalidatePath(`/reports/${reportId}`);
+  redirect("/partner/dashboard?updated=1");
 }

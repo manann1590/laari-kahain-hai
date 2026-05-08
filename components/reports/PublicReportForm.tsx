@@ -38,7 +38,7 @@ import {
   ACCEPTED_MENU_TYPES,
   MAX_MENU_FILE_LABEL,
 } from "@/lib/menu-upload";
-import type { FoodCategory } from "@/lib/supabase/types";
+import type { FoodCategory, Report } from "@/lib/supabase/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -52,6 +52,7 @@ type DraftData = {
   description?: string;
   vendor_phone?: string;
   vendor_whatsapp?: string;
+  vendor_website?: string;
   cuisine_tags?: string;
   price_range?: string;
   hours_text?: string;
@@ -60,6 +61,28 @@ type DraftData = {
   latitude?: string;
   longitude?: string;
 };
+
+type VendorFormInitialReport = Partial<Pick<
+  Report,
+  | "id"
+  | "category"
+  | "title"
+  | "description"
+  | "menu_text"
+  | "vendor_phone"
+  | "vendor_whatsapp"
+  | "vendor_website"
+  | "cuisine_tags"
+  | "price_range"
+  | "hours_text"
+  | "latitude"
+  | "longitude"
+  | "area"
+  | "district"
+  | "city"
+  | "address_text"
+  | "image_url"
+>>;
 
 function saveDraft(data: DraftData) {
   try {
@@ -91,14 +114,22 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "Something went wrong. Please try again.";
 }
 
-function SubmitButton({ isPreparing, locale }: { isPreparing: boolean; locale: Locale }) {
+function SubmitButton({
+  isPreparing,
+  locale,
+  label,
+}: {
+  isPreparing: boolean;
+  locale: Locale;
+  label?: string;
+}) {
   const { pending } = useFormStatus();
   const t = getCopy(locale);
   const isBusy = pending || isPreparing;
   return (
     <Button type="submit" size="lg" disabled={isBusy} className="w-full sm:w-auto">
       <Send className="h-4 w-4" aria-hidden="true" />
-      {isPreparing ? t.reportForm.preparingPhoto : pending ? t.reportForm.submitting : t.reportForm.submitReview}
+      {isPreparing ? t.reportForm.preparingPhoto : pending ? t.reportForm.submitting : label || t.reportForm.submitReview}
     </Button>
   );
 }
@@ -133,23 +164,30 @@ const issueIcons: Record<FoodCategory, typeof MapPin> = {
 export function PublicReportForm({
   action,
   locale,
+  initialReport,
+  requirePhoto = true,
+  submitLabel,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   locale: Locale;
+  initialReport?: VendorFormInitialReport;
+  requirePhoto?: boolean;
+  submitLabel?: string;
 }) {
   const t = getCopy(locale);
-  const [selectedIssue, setSelectedIssue] = useState<FoodCategory>("chaat_snacks");
-  const [vendorName, setVendorName] = useState("");
-  const [vendorPhone, setVendorPhone] = useState("");
-  const [vendorWhatsapp, setVendorWhatsapp] = useState("");
-  const [cuisineTags, setCuisineTags] = useState("");
-  const [priceRange, setPriceRange] = useState("");
-  const [hoursText, setHoursText] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
-  const [area, setArea] = useState("");
-  const [district, setDistrict] = useState("Ahmedabad");
-  const [description, setDescription] = useState("");
+  const [selectedIssue, setSelectedIssue] = useState<FoodCategory>(initialReport?.category || "chaat_snacks");
+  const [vendorName, setVendorName] = useState(initialReport?.title || "");
+  const [vendorPhone, setVendorPhone] = useState(initialReport?.vendor_phone || "");
+  const [vendorWhatsapp, setVendorWhatsapp] = useState(initialReport?.vendor_whatsapp || "");
+  const [vendorWebsite, setVendorWebsite] = useState(initialReport?.vendor_website || "");
+  const [cuisineTags, setCuisineTags] = useState(initialReport?.cuisine_tags || "");
+  const [priceRange, setPriceRange] = useState(initialReport?.price_range || "");
+  const [hoursText, setHoursText] = useState(initialReport?.hours_text || "");
+  const [latitude, setLatitude] = useState(initialReport?.latitude?.toString() || "");
+  const [longitude, setLongitude] = useState(initialReport?.longitude?.toString() || "");
+  const [area, setArea] = useState(initialReport?.area || "");
+  const [district, setDistrict] = useState(initialReport?.district || "Ahmedabad");
+  const [description, setDescription] = useState(initialReport?.menu_text || initialReport?.description || "");
   const [locationError, setLocationError] = useState("");
   const [isLocating, setIsLocating] = useState(false);
   const [imageError, setImageError] = useState("");
@@ -171,6 +209,10 @@ export function PublicReportForm({
 
   // Restore draft on mount
   useEffect(() => {
+    if (initialReport?.id) {
+      setDraftRestored(true);
+      return;
+    }
     const draft = loadDraft();
     if (draft) {
       if (draft.category) setSelectedIssue(draft.category);
@@ -178,6 +220,7 @@ export function PublicReportForm({
       if (draft.description) setDescription(draft.description);
       if (draft.vendor_phone) setVendorPhone(draft.vendor_phone);
       if (draft.vendor_whatsapp) setVendorWhatsapp(draft.vendor_whatsapp);
+      if (draft.vendor_website) setVendorWebsite(draft.vendor_website);
       if (draft.cuisine_tags) setCuisineTags(draft.cuisine_tags);
       if (draft.price_range) setPriceRange(draft.price_range);
       if (draft.hours_text) setHoursText(draft.hours_text);
@@ -187,10 +230,11 @@ export function PublicReportForm({
       if (draft.longitude) setLongitude(draft.longitude);
       setDraftRestored(true);
     }
-  }, []);
+  }, [initialReport?.id]);
 
   // Autosave draft on every relevant change
   useEffect(() => {
+    if (initialReport?.id) return;
     if (!draftRestored && !selectedIssue && !description && !area && !latitude && !longitude) return;
     saveDraft({
       category: selectedIssue,
@@ -198,6 +242,7 @@ export function PublicReportForm({
       description,
       vendor_phone: vendorPhone,
       vendor_whatsapp: vendorWhatsapp,
+      vendor_website: vendorWebsite,
       cuisine_tags: cuisineTags,
       price_range: priceRange,
       hours_text: hoursText,
@@ -206,7 +251,7 @@ export function PublicReportForm({
       latitude,
       longitude,
     });
-  }, [selectedIssue, vendorName, description, vendorPhone, vendorWhatsapp, cuisineTags, priceRange, hoursText, area, district, latitude, longitude, draftRestored]);
+  }, [initialReport?.id, selectedIssue, vendorName, description, vendorPhone, vendorWhatsapp, vendorWebsite, cuisineTags, priceRange, hoursText, area, district, latitude, longitude, draftRestored]);
 
   // Revoke object URLs on unmount
   useEffect(() => {
@@ -308,7 +353,7 @@ export function PublicReportForm({
     <form action={submitWithCompressedImage} className="space-y-6 pb-28 sm:pb-0">
       <input
         type="text"
-        name="website"
+        name="company_website"
         tabIndex={-1}
         autoComplete="off"
         className="hidden"
@@ -344,6 +389,15 @@ export function PublicReportForm({
             value={vendorWhatsapp}
             onChange={(event) => setVendorWhatsapp(event.target.value)}
             helperText="Leave blank and FoodRadar will use the public phone number for WhatsApp."
+          />
+          <Input
+            label="Website or ordering link"
+            name="vendor_website"
+            type="url"
+            placeholder="https://example.com"
+            value={vendorWebsite}
+            onChange={(event) => setVendorWebsite(event.target.value)}
+            helperText="Optional. Add your website, Instagram menu, or ordering page."
           />
           <Input
             label="Open hours"
@@ -542,16 +596,27 @@ export function PublicReportForm({
               value={district}
               onChange={(e) => setDistrict(e.target.value)}
             />
-            <Input label={t.common.city} name="city" defaultValue="Ahmedabad" />
-            <Input label={t.reportForm.addressLabel} name="address_text" placeholder={t.reportForm.addressPlaceholder} />
+            <Input label={t.common.city} name="city" defaultValue={initialReport?.city || "Ahmedabad"} />
+            <Input
+              label={t.reportForm.addressLabel}
+              name="address_text"
+              defaultValue={initialReport?.address_text || ""}
+              placeholder={t.reportForm.addressPlaceholder}
+            />
           </div>
         </div>
       </Card>
 
-      <Card title="4. Photo and submit" description="A fresh camera photo is required so customers can recognize the stall after review." className="p-4 sm:p-5">
+      <Card
+        title="4. Photo and submit"
+        description={requirePhoto ? "A fresh camera photo is required so customers can recognize the stall after review." : "Add a new photo only if you want to replace the current public image."}
+        className="p-4 sm:p-5"
+      >
         <div className="grid gap-4 md:grid-cols-[1fr_0.9fr]">
           <label className="block space-y-1.5">
-            <span className="text-sm font-bold text-civic-text">{t.reportForm.photoOptional}</span>
+            <span className="text-sm font-bold text-civic-text">
+              {requirePhoto ? "Food, stall, truck, or location photo - Required" : "Replace photo"}
+            </span>
             <input
               ref={fileInputRef}
               id="image_file"
@@ -559,12 +624,14 @@ export function PublicReportForm({
               type="file"
               accept={ACCEPTED_UPLOAD_IMAGE_TYPES}
               capture="environment"
-              required
+              required={requirePhoto}
               onChange={onPhotoChange}
               className="min-h-11 w-full rounded-lg border border-civic-line bg-white px-3 py-2 text-base text-civic-text outline-none transition placeholder:text-civic-muted focus:border-civic-orange focus:ring-2 focus:ring-civic-orange/20 file:mr-3 file:rounded-md file:border-0 file:bg-civic-orange file:px-3 file:py-1.5 file:text-sm file:font-black file:text-white sm:text-sm"
             />
             <p className="text-xs text-civic-muted">
-              {t.reportForm.uploadHelp.replace("{max}", MAX_UPLOAD_IMAGE_LABEL)}
+              {requirePhoto
+                ? t.reportForm.uploadHelp.replace("{max}", MAX_UPLOAD_IMAGE_LABEL)
+                : `Leave blank to keep the current image. New uploads must be ${MAX_UPLOAD_IMAGE_LABEL} or smaller.`}
             </p>
             {imageError ? <p className="text-xs text-civic-red">{imageError}</p> : null}
           </label>
@@ -581,6 +648,14 @@ export function PublicReportForm({
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
+              </>
+            ) : initialReport?.image_url ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={initialReport.image_url} alt="Current listing" className="h-52 w-full object-cover" />
+                <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2.5 py-1 text-xs font-bold text-civic-text shadow-sm">
+                  Current photo
+                </span>
               </>
             ) : (
               <div className="flex h-52 flex-col items-center justify-center p-5 text-center">
@@ -604,12 +679,12 @@ export function PublicReportForm({
           <Button href="/map" variant="secondary" size="lg" className="w-full sm:w-auto">
             {t.common.viewMap}
           </Button>
-          <SubmitButton isPreparing={isPreparingImage} locale={locale} />
+          <SubmitButton isPreparing={isPreparingImage} locale={locale} label={submitLabel} />
         </div>
       </Card>
 
-      <div className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+4.6rem)] z-30 border-t border-civic-line bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur sm:hidden">
-        <SubmitButton isPreparing={isPreparingImage} locale={locale} />
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-civic-line bg-white/95 p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur sm:hidden">
+        <SubmitButton isPreparing={isPreparingImage} locale={locale} label={submitLabel} />
       </div>
     </form>
   );

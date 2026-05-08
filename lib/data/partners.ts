@@ -149,7 +149,6 @@ export async function getPartnerSession() {
     .from("partner_accounts")
     .select("*")
     .eq("id", partnerId)
-    .eq("status", "active")
     .maybeSingle();
 
   if (error) throwSupabaseError("Could not load partner session", error);
@@ -162,10 +161,17 @@ export async function requirePartner() {
   return partner;
 }
 
+export async function requireActivePartner() {
+  const partner = await requirePartner();
+  if (partner.status !== "active") redirect("/partner/dashboard");
+  return partner;
+}
+
 export async function createPartnerRequest(input: {
   businessName: string;
   ownerName?: string;
   mobile: string;
+  password?: string;
   whatsapp?: string;
   area?: string;
   district?: string;
@@ -181,6 +187,7 @@ export async function createPartnerRequest(input: {
   if (existingError) throwSupabaseError("Could not check partner request", existingError);
   if (existing) throw new Error("A partner request already exists for this mobile number.");
 
+  const password = input.password ? await passwordDigest(input.password) : null;
   const { data, error } = await adminClient()
     .from("partner_accounts")
     .insert({
@@ -189,6 +196,8 @@ export async function createPartnerRequest(input: {
       mobile_hash: hash,
       mobile_encrypted: await encryptText(normalizeMobile(input.mobile)),
       whatsapp_encrypted: await encryptText(input.whatsapp ? normalizeMobile(input.whatsapp) : undefined),
+      password_hash: password?.hash || null,
+      password_salt: password?.salt || null,
       area: input.area,
       district: input.district || "Ahmedabad",
       address_text: input.addressText,
@@ -216,13 +225,28 @@ export async function getPartnerRequests(status?: PartnerStatus | "all") {
 }
 
 export async function approvePartnerRequest(partnerId: string) {
-  const token = `${crypto.randomUUID()}-${bytesToBase64(crypto.getRandomValues(new Uint8Array(18)))}`;
+  const { data: existing, error: existingError } = await adminClient()
+    .from("partner_accounts")
+    .select("*")
+    .eq("id", partnerId)
+    .maybeSingle();
+
+  if (existingError) throwSupabaseError("Could not load partner request", existingError);
+  if (!existing) throw new Error("Partner request not found.");
+
+  const partner = existing as PartnerAccount;
+  const hasPassword = Boolean(partner.password_hash && partner.password_salt);
+  const token = hasPassword
+    ? null
+    : `${crypto.randomUUID()}-${bytesToBase64(crypto.getRandomValues(new Uint8Array(18)))}`;
+  const now = new Date().toISOString();
   const { data, error } = await adminClient()
     .from("partner_accounts")
     .update({
-      status: "approved",
-      onboarding_token_hash: await sha256(token),
-      approved_at: new Date().toISOString(),
+      status: hasPassword ? "active" : "approved",
+      onboarding_token_hash: token ? await sha256(token) : null,
+      approved_at: now,
+      activated_at: hasPassword ? now : partner.activated_at,
       rejected_at: null,
       rejection_note: null,
     })
@@ -307,7 +331,7 @@ export async function verifyPartnerLogin(mobile: string, password: string) {
     .from("partner_accounts")
     .select("*")
     .eq("mobile_hash", hash)
-    .eq("status", "active")
+    .in("status", ["pending", "active", "rejected"])
     .maybeSingle();
 
   if (error) throwSupabaseError("Could not verify partner login", error);

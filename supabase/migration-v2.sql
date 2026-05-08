@@ -70,6 +70,7 @@ ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS reopened_at          TIMESTA
 ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS sent_to_amc_at       TIMESTAMPTZ;
 ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS vendor_phone         TEXT;
 ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS vendor_whatsapp      TEXT;
+ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS vendor_website       TEXT;
 ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS menu_text            TEXT;
 ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS cuisine_tags         TEXT;
 ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS price_range          TEXT;

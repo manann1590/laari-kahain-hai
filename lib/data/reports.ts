@@ -35,6 +35,7 @@ const PUBLIC_REPORT_COLUMNS = [
   "image_path",
   "vendor_phone",
   "vendor_whatsapp",
+  "vendor_website",
   "menu_text",
   "menu_image_url",
   "menu_image_path",
@@ -99,7 +100,7 @@ export async function getPublicReports(filters?: ReportFilters): Promise<PublicR
     const search = filters.search.replace(/[,%()]/g, " ").trim();
     if (search) {
       query = query.or(
-        `title.ilike.%${search}%,area.ilike.%${search}%,district.ilike.%${search}%,address_text.ilike.%${search}%,description.ilike.%${search}%,menu_text.ilike.%${search}%,cuisine_tags.ilike.%${search}%`,
+        `title.ilike.%${search}%,area.ilike.%${search}%,district.ilike.%${search}%,address_text.ilike.%${search}%,description.ilike.%${search}%,menu_text.ilike.%${search}%,cuisine_tags.ilike.%${search}%,vendor_website.ilike.%${search}%`,
       );
     }
   }
@@ -218,6 +219,7 @@ export async function createPublicReport(input: ReportInsert): Promise<Report> {
       image_path: parsed.image_path,
       vendor_phone: parsed.vendor_phone,
       vendor_whatsapp: parsed.vendor_whatsapp,
+      vendor_website: parsed.vendor_website,
       menu_text: parsed.menu_text,
       cuisine_tags: parsed.cuisine_tags,
       price_range: parsed.price_range,
@@ -263,6 +265,7 @@ export async function createPartnerReport(input: ReportInsert): Promise<Report> 
       image_path: parsed.image_path,
       vendor_phone: parsed.vendor_phone,
       vendor_whatsapp: parsed.vendor_whatsapp,
+      vendor_website: parsed.vendor_website,
       menu_text: parsed.menu_text,
       menu_image_url: parsed.menu_image_url,
       menu_image_path: parsed.menu_image_path,
@@ -317,6 +320,60 @@ export async function updateReport(id: string, input: ReportUpdate): Promise<Rep
     old_status: existing.status,
     new_status: (data as Report).status,
     note: statusChanged ? `Status changed to ${(data as Report).status}.` : "Listing details updated.",
+  });
+
+  return data as Report;
+}
+
+export async function getPartnerReportById(partnerId: string, reportId: string): Promise<Report | null> {
+  const { data, error } = await adminClient()
+    .from("vendors")
+    .select("*")
+    .eq("id", reportId)
+    .eq("partner_id", partnerId)
+    .maybeSingle();
+
+  if (error) throwSupabaseError("Could not load partner listing", error);
+  return data as Report | null;
+}
+
+export async function updatePartnerReport(
+  partnerId: string,
+  reportId: string,
+  input: ReportUpdate,
+): Promise<Report> {
+  const existing = await getPartnerReportById(partnerId, reportId);
+  if (!existing) throw new Error("Listing not found");
+
+  const parsed = reportUpdateSchema.parse(input);
+  const partnerEditableFields: ReportUpdate = { ...parsed };
+  delete partnerEditableFields.status;
+  delete partnerEditableFields.duplicate_of;
+  delete partnerEditableFields.partner_id;
+  delete partnerEditableFields.reporter_phone_hash;
+  delete partnerEditableFields.admin_notes;
+
+  const { data, error } = await adminClient()
+    .from("vendors")
+    .update(stripUndefined({
+      ...partnerEditableFields,
+      status: "pending",
+      approved_at: null,
+      rejected_at: null,
+    }))
+    .eq("id", reportId)
+    .eq("partner_id", partnerId)
+    .select("*")
+    .single();
+
+  if (error) throwSupabaseError("Could not update partner listing", error);
+
+  await addVendorEvent(reportId, {
+    event_type: "updated",
+    old_status: existing.status,
+    new_status: (data as Report).status,
+    note: "Listing updated by partner and sent for admin review.",
+    actor: "partner",
   });
 
   return data as Report;

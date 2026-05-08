@@ -26,6 +26,7 @@ export const reportCreateSchema = z.object({
   image_path: optionalText,
   vendor_phone: optionalText,
   vendor_whatsapp: optionalText,
+  vendor_website: optionalText,
   menu_text: optionalText,
   menu_image_url: optionalText,
   menu_image_path: optionalText,
